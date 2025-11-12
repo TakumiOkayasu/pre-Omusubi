@@ -3,25 +3,26 @@
 using namespace omusubi;
 using namespace omusubi::literals;
 
+SystemContext& ctx = get_system_context();
+SerialCommunication* serial = nullptr;
+WiFiCommunication* wifi = nullptr;
+Pressable* button_a = nullptr;
+
 void setup() {
-    SystemContext& ctx = get_system_context();
     ctx.begin();
 
-    SerialCommunication* serial = ctx.get_serial(0);
+    serial = ctx.get_serial(0);
+    wifi = ctx.get_wifi();
+    button_a = ctx.get_button(0);
+
     serial->write_line("=== WiFi Scanner ==="_sv);
     serial->write_line("Press button A to scan"_sv);
 }
 
 void loop() {
-    SystemContext& ctx = get_system_context();
     ctx.update();
 
-    Pressable* button_a = ctx.get_button(0);
-
     if (button_a->was_pressed()) {
-        SerialCommunication* serial = ctx.get_serial(0);
-        WiFiCommunication* wifi = ctx.get_wifi();
-
         serial->write_line("Scanning..."_sv);
 
         wifi->start_scan();

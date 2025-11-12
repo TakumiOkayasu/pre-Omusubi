@@ -57,21 +57,23 @@ your_project/
 using namespace omusubi;
 using namespace omusubi::literals;
 
+SystemContext& ctx = get_system_context();
+SerialCommunication* serial = nullptr;
+Pressable* button = nullptr;
+
 void setup() {
-    SystemContext& ctx = get_system_context();
     ctx.begin();
 
-    SerialCommunication* serial = ctx.get_serial(0);
+    serial = ctx.get_serial(0);
+    button = ctx.get_button(0);
+
     serial->write_line("Hello, Omusubi!"_sv);
 }
 
 void loop() {
-    SystemContext& ctx = get_system_context();
     ctx.update();
 
-    Pressable* button = ctx.get_button(0);
     if (button->was_pressed()) {
-        SerialCommunication* serial = ctx.get_serial(0);
         serial->write_line("Button pressed!"_sv);
     }
 
@@ -98,21 +100,21 @@ void log_message(Writable& output, StringView message) {
     output.write_line(message);
 }
 
+SystemContext& ctx = get_system_context();
+SerialCommunication* serial = nullptr;
+Displayable* display = nullptr;
+
 void setup() {
-    SystemContext& ctx = get_system_context();
     ctx.begin();
-    
-    // M5Stackのシリアル
-    SerialCommunication* serial = ctx.get_serial(0);
-    
-    // M5Stackのディスプレイ
-    Displayable* display = ctx.get_display();
-    
+
+    serial = ctx.get_serial(0);
+    display = ctx.get_display();
+
     // ✅ 同じ関数が異なるデバイスで動作
     if (serial) {
         log_message(*serial, "System started"_sv);
     }
-    
+
     if (display) {
         log_message(*display, "System started"_sv);
     }
@@ -133,7 +135,7 @@ using namespace omusubi::literals;
 // ✅ どの3Dセンサーでも動作する汎用関数
 void monitor_sensor(Measurable3D& sensor, Writable& output) {
     Vector3 values = sensor.get_values();
-    
+
     output.write("X: "_sv);
     output.write(values.x);
     output.write(", Y: "_sv);
@@ -142,32 +144,35 @@ void monitor_sensor(Measurable3D& sensor, Writable& output) {
     output.write_line(values.z);
 }
 
+SystemContext& ctx = get_system_context();
+SerialCommunication* serial = nullptr;
+Measurable3D* accel = nullptr;
+Measurable3D* gyro = nullptr;
+
 void setup() {
-    SystemContext& ctx = get_system_context();
     ctx.begin();
+
+    serial = ctx.get_serial(0);
+    accel = ctx.get_accelerometer();
+    gyro = ctx.get_gyroscope();
 }
 
 void loop() {
-    SystemContext& ctx = get_system_context();
     ctx.update();
-    
-    SerialCommunication* serial = ctx.get_serial(0);
-    Measurable3D* accel = ctx.get_accelerometer();
-    Measurable3D* gyro = ctx.get_gyroscope();
-    
+
     if (serial) {
         // ✅ 同じ関数が加速度センサーでもジャイロでも動作
         if (accel) {
             serial->write("Accelerometer: "_sv);
             monitor_sensor(*accel, *serial);
         }
-        
+
         if (gyro) {
             serial->write("Gyroscope: "_sv);
             monitor_sensor(*gyro, *serial);
         }
     }
-    
+
     ctx.delay(1000);
 }
 ```
@@ -184,21 +189,21 @@ class SimpleProtocol {
 private:
     Readable& input_;
     Writable& output_;
-    
+
 public:
     SimpleProtocol(Readable& input, Writable& output)
         : input_(input), output_(output) {}
-    
+
     void send_command(StringView command) {
         output_.write("CMD:"_sv);
         output_.write_line(command);
     }
-    
+
     FixedString<256> receive_response() {
         if (!input_.has_data()) {
             return FixedString<256>();
         }
-        
+
         FixedString<256> line = input_.read_line();
         if (line.view().starts_with("RES:"_sv)) {
             return FixedString<256>(line.view().substring(4, line.byte_length() - 4));
@@ -207,25 +212,29 @@ public:
     }
 };
 
+SystemContext& ctx = get_system_context();
+SerialCommunication* serial = nullptr;
+BluetoothCommunication* bt = nullptr;
+WiFiCommunication* wifi = nullptr;
+
 void setup() {
-    SystemContext& ctx = get_system_context();
     ctx.begin();
-    
-    SerialCommunication* serial = ctx.get_serial(0);
-    BluetoothCommunication* bt = ctx.get_bluetooth();
-    WiFiCommunication* wifi = ctx.get_wifi();
-    
+
+    serial = ctx.get_serial(0);
+    bt = ctx.get_bluetooth();
+    wifi = ctx.get_wifi();
+
     // ✅ 同じプロトコルを異なる通信手段で使用
     if (serial) {
         SimpleProtocol protocol(*serial, *serial);
         protocol.send_command("STATUS"_sv);
     }
-    
+
     if (bt && bt->is_connected()) {
         SimpleProtocol protocol(*bt, *bt);
         protocol.send_command("STATUS"_sv);
     }
-    
+
     // WiFi経由でも同じプロトコルが使える
     // （WiFiCommunicationがReadable/Writableを実装していれば）
 }

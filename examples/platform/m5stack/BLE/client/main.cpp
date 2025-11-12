@@ -3,12 +3,17 @@
 using namespace omusubi;
 using namespace omusubi::literals;
 
+SystemContext& ctx = get_system_context();
+SerialCommunication* serial = nullptr;
+BLECommunication* ble = nullptr;
+Pressable* button_a = nullptr;
+
 void setup() {
-    SystemContext& ctx = get_system_context();
     ctx.begin();
 
-    SerialCommunication* serial = ctx.get_serial(0);
-    BLECommunication* ble = ctx.get_ble();
+    serial = ctx.get_serial(0);
+    ble = ctx.get_ble();
+    button_a = ctx.get_button(0);
 
     serial->write_line("=== BLE Client ==="_sv);
 
@@ -18,15 +23,9 @@ void setup() {
 }
 
 void loop() {
-    SystemContext& ctx = get_system_context();
     ctx.update();
 
-    Pressable* button_a = ctx.get_button(0);
-
     if (button_a->was_pressed()) {
-        SerialCommunication* serial = ctx.get_serial(0);
-        BLECommunication* ble = ctx.get_ble();
-
         serial->write_line("Scanning..."_sv);
 
         ble->start_scan();

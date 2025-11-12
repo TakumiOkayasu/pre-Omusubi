@@ -7,12 +7,15 @@ using namespace omusubi::literals;
 constexpr const char* WIFI_SSID = "YourSSID";
 constexpr const char* WIFI_PASSWORD = "YourPassword";
 
+SystemContext& ctx = get_system_context();
+SerialCommunication* serial = nullptr;
+WiFiCommunication* wifi = nullptr;
+
 void setup() {
-    SystemContext& ctx = get_system_context();
     ctx.begin();
 
-    SerialCommunication* serial = ctx.get_serial(0);
-    WiFiCommunication* wifi = ctx.get_wifi();
+    serial = ctx.get_serial(0);
+    wifi = ctx.get_wifi();
 
     serial->write_line("=== WiFi Connection ==="_sv);
     serial->write("Connecting to "_sv);
@@ -32,7 +35,6 @@ void setup() {
 }
 
 void loop() {
-    SystemContext& ctx = get_system_context();
     ctx.update();
     ctx.delay(100);
 }
