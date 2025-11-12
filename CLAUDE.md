@@ -2,6 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 重要：日本語でのコミュニケーション必須 (IMPORTANT: Japanese Communication Required)
+
+**このプロジェクトでは、ユーザーとのコミュニケーションは日本語で行うことを必須とします。**
+
+- すべての応答は日本語で行ってください
+- コメントや説明は日本語で記述してください
+- コードのコメントも日本語を使用してください
+- 技術用語は英語のままでも構いませんが、説明は日本語で行ってください
+
+**English responses are not acceptable. All communication with the user must be in Japanese.**
+
 ## Project Overview
 
 Omusubi is a lightweight, type-safe C++17 framework for embedded devices (primarily M5Stack). It provides a clean architecture centered around `SystemContext` for unified hardware access, with complete interface/implementation separation for hardware-independent code.
