@@ -36,7 +36,10 @@ enum class BLECharacteristicProperty : uint16_t {
 };
 
 /**
- * @brief BLE Characteristic
+ * @brief BLE Characteristic（キャラクタリスティック）
+ *
+ * BLEサービスに属するデータ単位。読み取り、書き込み、通知などの機能を持ちます。
+ * Bluetooth SIGで定義された標準UUIDまたはカスタムUUIDを使用します。
  */
 class BLECharacteristic {
 public:
@@ -64,7 +67,10 @@ public:
 };
 
 /**
- * @brief BLE Service
+ * @brief BLE Service（サービス）
+ *
+ * 複数のCharacteristicをグループ化したもの。
+ * 例: Heart Rate Service、Battery Service、カスタムサービスなど。
  */
 class BLEService {
 public:
@@ -82,7 +88,54 @@ public:
 };
 
 /**
- * @brief BLE通信インターフェース
+ * @brief BLE (Bluetooth Low Energy) 通信デバイス
+ *
+ * BLE 4.0以降の低電力Bluetooth通信を扱います。
+ * Central（クライアント）モードとPeripheral（サーバー）モードの両方をサポートします。
+ * Connectable、Scannableインターフェースを実装しています。
+ *
+ * 使用例（Peripheralモード - サーバー）:
+ * @code
+ * BLECommunication* ble = ctx.get_ble();
+ *
+ * // Peripheralモードで開始
+ * ble->begin_peripheral("M5Stack-BLE"_sv);
+ *
+ * // サービスとキャラクタリスティックを追加
+ * BLEService* service = ble->add_service("UUID"_sv);
+ * BLECharacteristic* ch = service->add_characteristic(
+ *     "UUID"_sv,
+ *     static_cast<uint16_t>(BLECharacteristicProperty::read) |
+ *     static_cast<uint16_t>(BLECharacteristicProperty::notify)
+ * );
+ *
+ * // アドバタイジング開始
+ * ble->start_advertising();
+ *
+ * // 通知を送信
+ * if (ble->is_connected()) {
+ *     ch->notify(data, length);
+ * }
+ * @endcode
+ *
+ * 使用例（Centralモード - クライアント）:
+ * @code
+ * BLECommunication* ble = ctx.get_ble();
+ *
+ * // Centralモードで開始
+ * ble->begin_central("M5Stack-Central"_sv);
+ *
+ * // デバイスをスキャン
+ * ble->start_scan();
+ * ctx.delay(3000);
+ * ble->stop_scan();
+ *
+ * // 見つかったデバイスに接続
+ * uint8_t count = ble->get_found_count();
+ * for (uint8_t i = 0; i < count; ++i) {
+ *     FixedString<64> name = ble->get_found_name(i);
+ * }
+ * @endcode
  */
 class BLECommunication
     : public Connectable

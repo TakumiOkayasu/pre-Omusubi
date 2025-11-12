@@ -1,7 +1,12 @@
 #pragma once
 
-// MCU Configuration
-// デバイス固有の設定をここで定義
+/**
+ * @file mcu_config.h
+ * @brief MCU（マイコン）固有の設定定義
+ *
+ * デバイスやプラットフォームに応じた設定値やマクロを定義します。
+ * コンパイル時に各種制約や機能を調整できます。
+ */
 
 // メモリ制約のあるMCU向けの設定
 #ifndef OMUSUBI_MAX_STRING_LENGTH
