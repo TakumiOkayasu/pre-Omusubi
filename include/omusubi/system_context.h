@@ -8,10 +8,10 @@
 namespace omusubi {
 
 // 前方宣言
-class SerialCommunication;
-class BluetoothCommunication;
-class WiFiCommunication;
-class BLECommunication;
+class SerialContext;
+class BluetoothContext;
+class WiFiContext;
+class BLEContext;
 class Pressable;
 class Measurable1D;
 class Measurable3D;
@@ -79,26 +79,26 @@ public:
     // ========================================
     // 通信デバイス
     // ========================================
-    
+
     /**
      * @brief シリアル通信を取得
      */
-    virtual SerialCommunication* get_serial(uint8_t port = 0) = 0;
+    virtual SerialContext* get_serial(uint8_t port = 0) = 0;
 
     /**
      * @brief Bluetooth Classic通信を取得
      */
-    virtual BluetoothCommunication* get_bluetooth() = 0;
+    virtual BluetoothContext* get_bluetooth() = 0;
 
     /**
      * @brief Wi-Fi通信を取得
      */
-    virtual WiFiCommunication* get_wifi() = 0;
+    virtual WiFiContext* get_wifi() = 0;
 
     /**
      * @brief BLE (Bluetooth Low Energy) 通信を取得
      */
-    virtual BLECommunication* get_ble() = 0;
+    virtual BLEContext* get_ble() = 0;
 
     // ========================================
     // 入力デバイス

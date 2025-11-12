@@ -13,8 +13,8 @@ constexpr const char* WIFI_PASSWORD = "YourPassword";
 
 // グローバル変数：setup()で一度だけ取得し、loop()で再利用
 SystemContext& ctx = get_system_context();
-SerialCommunication* serial = nullptr;
-WiFiCommunication* wifi = nullptr;
+SerialContext* serial = nullptr;
+WiFiContext* wifi = nullptr;
 
 void setup() {
     // システムの初期化

@@ -9,7 +9,13 @@ namespace m5stack {
 class M5StackSystemContext : public SystemContext {
 private:
     class Impl;
-    Impl* impl_;
+
+    // ヒープを使わずに静的バッファで確保（placement newを使用）
+    static constexpr size_t ImplBufferSize = 8192;  // Implのサイズに十分な容量
+    alignas(std::max_align_t) char impl_buffer_[ImplBufferSize];
+
+    Impl* get_impl() { return reinterpret_cast<Impl*>(impl_buffer_); }
+    const Impl* get_impl() const { return reinterpret_cast<const Impl*>(impl_buffer_); }
 
     M5StackSystemContext();
     ~M5StackSystemContext() override;
@@ -31,10 +37,10 @@ public:
     PowerState get_power_state() const override;
     uint8_t get_battery_level() const override;
 
-    SerialCommunication* get_serial(uint8_t port = 0) override;
-    BluetoothCommunication* get_bluetooth() override;
-    WiFiCommunication* get_wifi() override;
-    BLECommunication* get_ble() override;
+    SerialContext* get_serial(uint8_t port = 0) override;
+    BluetoothContext* get_bluetooth() override;
+    WiFiContext* get_wifi() override;
+    BLEContext* get_ble() override;
 
     Pressable* get_button(uint8_t index) override;
     uint8_t get_button_count() const override;

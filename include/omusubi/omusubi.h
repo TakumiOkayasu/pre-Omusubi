@@ -13,9 +13,9 @@
 #include "interface/measurable.h"
 #include "interface/displayable.h"
 
-#include "device/serial_communication.h"
-#include "device/bluetooth_communication.h"
-#include "device/wifi_communication.h"
-#include "device/ble_communication.h"
+#include "device/serial_context.h"
+#include "device/bluetooth_context.h"
+#include "device/wifi_context.h"
+#include "device/ble_context.h"
 
 #include "system_context.h"

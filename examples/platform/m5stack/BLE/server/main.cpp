@@ -14,8 +14,8 @@ constexpr const char* CHAR_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
 
 // グローバル変数：setup()で一度だけ取得し、loop()で再利用
 SystemContext& ctx = get_system_context();
-SerialCommunication* serial = nullptr;
-BLECommunication* ble = nullptr;
+SerialContext* serial = nullptr;
+BLEContext* ble = nullptr;
 Pressable* button_a = nullptr;
 BLEService* service = nullptr;
 BLECharacteristic* ch = nullptr;

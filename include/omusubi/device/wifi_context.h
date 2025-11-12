@@ -15,7 +15,7 @@ namespace omusubi {
  *
  * 使用例:
  * @code
- * WiFiCommunication* wifi = ctx.get_wifi();
+ * WiFiContext* wifi = ctx.get_wifi();
  *
  * // WiFiに接続
  * if (wifi->connect_to("MySSID"_sv, "password"_sv, 10000)) {
@@ -38,16 +38,16 @@ namespace omusubi {
  * wifi->start_ap("M5Stack-AP"_sv, "password123"_sv);
  * @endcode
  */
-class WiFiCommunication
+class WiFiContext
     : public Connectable
     , public Scannable {
 public:
-    WiFiCommunication() = default;
-    ~WiFiCommunication() override = default;
-    WiFiCommunication(const WiFiCommunication&) = delete;
-    WiFiCommunication& operator=(const WiFiCommunication&) = delete;
-    WiFiCommunication(WiFiCommunication&&) = delete;
-    WiFiCommunication& operator=(WiFiCommunication&&) = delete;
+    WiFiContext() = default;
+    ~WiFiContext() override = default;
+    WiFiContext(const WiFiContext&) = delete;
+    WiFiContext& operator=(const WiFiContext&) = delete;
+    WiFiContext(WiFiContext&&) = delete;
+    WiFiContext& operator=(WiFiContext&&) = delete;
 
     /** @brief WiFiネットワークに接続 @param ssid SSID @param password パスワード @param timeout_ms タイムアウト(ms) @return 成功ならtrue */
     virtual bool connect_to(StringView ssid, StringView password, uint32_t timeout_ms = 0) = 0;

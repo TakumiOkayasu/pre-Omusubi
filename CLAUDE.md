@@ -53,10 +53,10 @@ Pure abstract interfaces defining capabilities:
 
 ### 2. Device Layer (`include/omusubi/device/`)
 Device-specific abstractions that inherit from interfaces:
-- `SerialCommunication` (Readable + Writable + Connectable)
-- `BluetoothCommunication` (Readable + Writable + Connectable + Scannable)
-- `WiFiCommunication` (Connectable + Scannable)
-- `BLECommunication` (Connectable + Scannable + BLE-specific)
+- `SerialContext` (Readable + Writable + Connectable)
+- `BluetoothContext` (Readable + Writable + Connectable + Scannable)
+- `WiFiContext` (Connectable + Scannable)
+- `BLEContext` (Connectable + Scannable + BLE-specific)
 
 ### 3. Platform Layer (`include/omusubi/platform/`, `src/platform/`)
 Platform-specific implementations (e.g., `M5StackSystemContext`) that implement the `SystemContext` interface and provide concrete device instances.
@@ -68,7 +68,7 @@ Platform-specific implementations (e.g., `M5StackSystemContext`) that implement 
 ```cpp
 // Retrieve once globally - critical for performance
 SystemContext& ctx = get_system_context();
-SerialCommunication* serial = nullptr;
+SerialContext* serial = nullptr;
 
 void setup() {
     ctx.begin();
@@ -116,7 +116,7 @@ using namespace omusubi::literals;
 
 // グローバル変数：setup()で一度だけ取得し、loop()で再利用
 SystemContext& ctx = get_system_context();
-SerialCommunication* serial = nullptr;
+SerialContext* serial = nullptr;
 
 void setup() {
     // システムの初期化

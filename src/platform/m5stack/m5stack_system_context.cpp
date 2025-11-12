@@ -1,4 +1,4 @@
-#include "omusubi/platform/m5stack/m5stack_system_context.h"
+#include "omusubi/platform/m5stack/m5stack_system_context.hpp"
 #include <M5Stack.h>
 #include <esp_system.h>
 #include <BLEDevice.h>
@@ -8,6 +8,7 @@
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 #include <memory>
+#include <new>
 
 namespace omusubi {
 namespace platform {
@@ -17,7 +18,7 @@ namespace m5stack {
 // 内部実装クラス
 // ========================================
 
-class M5StackSerialCommunication final : public SerialCommunication {
+class M5StackSerialContext final : public SerialContext {
 private:
     HardwareSerial* serial_;
     uint8_t port_;
@@ -25,7 +26,7 @@ private:
     bool connected_;
     
 public:
-    explicit M5StackSerialCommunication(uint8_t port)
+    explicit M5StackSerialContext(uint8_t port)
         : serial_(nullptr), port_(port), baud_rate_(115200), connected_(false) {
         switch (port) {
             case 0: serial_ = &Serial; break;
@@ -170,7 +171,7 @@ public:
     }
 };
 
-class M5StackBluetoothCommunication final : public BluetoothCommunication {
+class M5StackBluetoothContext final : public BluetoothContext {
 private:
     BluetoothSerial bt_;
     bool connected_;
@@ -188,7 +189,7 @@ private:
     bool scanning_;
     
 public:
-    M5StackBluetoothCommunication()
+    M5StackBluetoothContext()
         : connected_(false)
         , found_count_(0)
         , scanning_(false) {
@@ -197,7 +198,7 @@ public:
         last_device_name_[0] = '\0';
     }
     
-    ~M5StackBluetoothCommunication() {
+    ~M5StackBluetoothContext() {
         if (connected_) {
             disconnect();
         }
@@ -535,7 +536,7 @@ public:
     }
 };
 
-class M5StackWiFiCommunication final : public WiFiCommunication {
+class M5StackWiFiContext final : public WiFiContext {
 private:
     bool connected_;
     bool ap_mode_;
@@ -554,7 +555,7 @@ private:
     bool scanning_;
     
 public:
-    M5StackWiFiCommunication()
+    M5StackWiFiContext()
         : connected_(false)
         , ap_mode_(false)
         , found_count_(0)
@@ -563,7 +564,7 @@ public:
         last_password_[0] = '\0';
     }
     
-    ~M5StackWiFiCommunication() {
+    ~M5StackWiFiContext() {
         if (connected_) {
             disconnect();
         }
@@ -850,14 +851,14 @@ public:
     }
 };
 
-class M5StackButton final : public Pressable {
+class M5StackButtonContext final : public Pressable {
 private:
     uint8_t pin_;
     bool current_state_;
     bool previous_state_;
     
 public:
-    explicit M5StackButton(uint8_t pin)
+    explicit M5StackButtonContext(uint8_t pin)
         : pin_(pin), current_state_(false), previous_state_(false) {
         pinMode(pin_, INPUT_PULLUP);
     }
@@ -883,12 +884,12 @@ public:
     }
 };
 
-class M5StackAccelerometer final : public Measurable3D {
+class M5StackAccelerometerContext final : public Measurable3D {
 private:
     bool initialized_;
     
 public:
-    M5StackAccelerometer() : initialized_(false) {}
+    M5StackAccelerometerContext() : initialized_(false) {}
     
     void begin() {
         if (!initialized_) {
@@ -909,12 +910,12 @@ public:
     float get_z() const override { return get_values().z; }
 };
 
-class M5StackGyroscope final : public Measurable3D {
+class M5StackGyroscopeContext final : public Measurable3D {
 private:
     bool initialized_;
     
 public:
-    M5StackGyroscope() : initialized_(false) {}
+    M5StackGyroscopeContext() : initialized_(false) {}
     
     void begin() {
         if (!initialized_) {
@@ -935,7 +936,7 @@ public:
     float get_z() const override { return get_values().z; }
 };
 
-class M5StackDisplay final : public Displayable {
+class M5StackDisplayContext final : public Displayable {
 private:
     int32_t cursor_x_;
     int32_t cursor_y_;
@@ -944,7 +945,7 @@ private:
     uint32_t bg_color_;
     
 public:
-    M5StackDisplay()
+    M5StackDisplayContext()
         : cursor_x_(0), cursor_y_(0), text_size_(1)
         , text_color_(0xFFFF), bg_color_(0x0000) {}
     
@@ -1016,7 +1017,7 @@ public:
     }
 };
 
-class M5StackBLECharacteristic final : public BLECharacteristic {
+class M5StackBLECharacteristicContext final : public BLECharacteristic {
 private:
     BLERemoteCharacteristic* remote_char_;  // Centralモード用
     ::BLECharacteristic* local_char_;        // Peripheralモード用
@@ -1024,7 +1025,7 @@ private:
     uint16_t properties_;
     
 public:
-    M5StackBLECharacteristic(BLERemoteCharacteristic* remote_char)
+    M5StackBLECharacteristicContext(BLERemoteCharacteristic* remote_char)
         : remote_char_(remote_char)
         , local_char_(nullptr)
         , properties_(0) {
@@ -1051,7 +1052,7 @@ public:
         }
     }
     
-    M5StackBLECharacteristic(::BLECharacteristic* local_char, uint16_t properties)
+    M5StackBLECharacteristicContext(::BLECharacteristic* local_char, uint16_t properties)
         : remote_char_(nullptr)
         , local_char_(local_char)
         , properties_(properties) {
@@ -1151,17 +1152,17 @@ public:
 // ========================================
 // M5Stack BLE Service実装
 // ========================================
-class M5StackBLEService final : public BLEService {
+class M5StackBLEServiceContext final : public BLEService {
 private:
     BLERemoteService* remote_service_;  // Centralモード用
     ::BLEService* local_service_;        // Peripheralモード用
     char uuid_[64];
     
-    M5StackBLECharacteristic* characteristics_[16];
+    M5StackBLECharacteristicContext* characteristics_[16];
     uint8_t characteristic_count_;
     
 public:
-    M5StackBLEService(BLERemoteService* remote_service)
+    M5StackBLEServiceContext(BLERemoteService* remote_service)
         : remote_service_(remote_service)
         , local_service_(nullptr)
         , characteristic_count_(0) {
@@ -1175,7 +1176,7 @@ public:
         }
     }
     
-    M5StackBLEService(::BLEService* local_service)
+    M5StackBLEServiceContext(::BLEService* local_service)
         : remote_service_(nullptr)
         , local_service_(local_service)
         , characteristic_count_(0) {
@@ -1189,7 +1190,7 @@ public:
         }
     }
     
-    ~M5StackBLEService() {
+    ~M5StackBLEServiceContext() {
         for (uint8_t i = 0; i < characteristic_count_; ++i) {
             delete characteristics_[i];
         }
@@ -1219,7 +1220,7 @@ public:
         
         if (!char_obj) return nullptr;
         
-        M5StackBLECharacteristic* wrapper = new M5StackBLECharacteristic(char_obj, properties);
+        M5StackBLECharacteristicContext* wrapper = new M5StackBLECharacteristicContext(char_obj, properties);
         characteristics_[characteristic_count_++] = wrapper;
         
         return wrapper;
@@ -1245,8 +1246,8 @@ public:
                 remote_service_->getCharacteristic(BLEUUID(uuid_str));
             
             if (remote_char && characteristic_count_ < 16) {
-                M5StackBLECharacteristic* wrapper = 
-                    new M5StackBLECharacteristic(remote_char);
+                M5StackBLECharacteristicContext* wrapper = 
+                    new M5StackBLECharacteristicContext(remote_char);
                 characteristics_[characteristic_count_++] = wrapper;
                 return wrapper;
             }
@@ -1270,7 +1271,7 @@ public:
 // ========================================
 // M5Stack BLE Communication実装
 // ========================================
-class M5StackBLECommunication final : public BLECommunication {
+class M5StackBLEContext final : public BLEContext {
 private:
     BLEMode mode_;
     bool initialized_;
@@ -1286,7 +1287,7 @@ private:
     BLEServer* server_;
     
     // Services
-    M5StackBLEService* services_[8];
+    M5StackBLEServiceContext* services_[8];
     uint8_t service_count_;
     
     // Scan results
@@ -1301,7 +1302,7 @@ private:
     bool scanning_;
     
 public:
-    M5StackBLECommunication()
+    M5StackBLEContext()
         : mode_(BLEMode::idle)
         , initialized_(false)
         , connected_(false)
@@ -1321,7 +1322,7 @@ public:
         }
     }
     
-    ~M5StackBLECommunication() {
+    ~M5StackBLEContext() {
         end();
     }
     
@@ -1600,7 +1601,7 @@ public:
             return nullptr;
         }
         
-        M5StackBLEService* wrapper = new M5StackBLEService(remote_service);
+        M5StackBLEServiceContext* wrapper = new M5StackBLEServiceContext(remote_service);
         services_[service_count_++] = wrapper;
         
         return wrapper;
@@ -1640,7 +1641,7 @@ public:
             return nullptr;
         }
         
-        M5StackBLEService* wrapper = new M5StackBLEService(local_service);
+        M5StackBLEServiceContext* wrapper = new M5StackBLEServiceContext(local_service);
         services_[service_count_++] = wrapper;
         
         return wrapper;
@@ -1749,17 +1750,17 @@ public:
 
 class M5StackSystemContext::Impl {
 public:
-    M5StackSerialCommunication serial0{0};
-    M5StackSerialCommunication serial1{1};
-    M5StackBluetoothCommunication bluetooth;
-    M5StackWiFiCommunication wifi;
-    M5StackBLECommunication ble;  // 追加
-    M5StackButton button_a{39};
-    M5StackButton button_b{38};
-    M5StackButton button_c{37};
-    M5StackAccelerometer accelerometer;
-    M5StackGyroscope gyroscope;
-    M5StackDisplay display;
+    M5StackSerialContext serial0{0};
+    M5StackSerialContext serial1{1};
+    M5StackBluetoothContext bluetooth;
+    M5StackWiFiContext wifi;
+    M5StackBLEContext ble;  // 追加
+    M5StackButtonContext button_a{39};
+    M5StackButtonContext button_b{38};
+    M5StackButtonContext button_c{37};
+    M5StackAccelerometerContext accelerometer;
+    M5StackGyroscopeContext gyroscope;
+    M5StackDisplayContext display;
     bool initialized{false};
 };
 
@@ -1767,12 +1768,12 @@ public:
 // M5StackSystemContext実装
 // ========================================
 
-M5StackSystemContext::M5StackSystemContext()
-    : impl_(new Impl()) {
+M5StackSystemContext::M5StackSystemContext() {
+    new (impl_buffer_) Impl();  // placement new - ヒープを使わずバッファに直接構築
 }
 
 M5StackSystemContext::~M5StackSystemContext() {
-    delete impl_;
+    get_impl()->~Impl();  // 明示的にデストラクタを呼び出し
 }
 
 M5StackSystemContext& M5StackSystemContext::get_instance() {
@@ -1816,28 +1817,28 @@ uint8_t M5StackSystemContext::get_battery_level() const {
     return 0;
 }
 
-SerialCommunication* M5StackSystemContext::get_serial(uint8_t port) {
-    if (port == 0) return &impl_->serial0;
-    if (port == 1) return &impl_->serial1;
+SerialContext* M5StackSystemContext::get_serial(uint8_t port) {
+    if (port == 0) return &get_impl()->serial0;
+    if (port == 1) return &get_impl()->serial1;
     return nullptr;
 }
 
-BluetoothCommunication* M5StackSystemContext::get_bluetooth() {
-    return &impl_->bluetooth;
+BluetoothContext* M5StackSystemContext::get_bluetooth() {
+    return &get_impl()->bluetooth;
 }
 
-WiFiCommunication* M5StackSystemContext::get_wifi() {
-    return &impl_->wifi;
+WiFiContext* M5StackSystemContext::get_wifi() {
+    return &get_impl()->wifi;
 }
 
-BLECommunication* M5StackSystemContext::get_ble() {
-    return &impl_->ble;
+BLEContext* M5StackSystemContext::get_ble() {
+    return &get_impl()->ble;
 }
 
 Pressable* M5StackSystemContext::get_button(uint8_t index) {
-    if (index == 0) return &impl_->button_a;
-    if (index == 1) return &impl_->button_b;
-    if (index == 2) return &impl_->button_c;
+    if (index == 0) return &get_impl()->button_a;
+    if (index == 1) return &get_impl()->button_b;
+    if (index == 2) return &get_impl()->button_c;
     return nullptr;
 }
 
@@ -1846,33 +1847,33 @@ uint8_t M5StackSystemContext::get_button_count() const {
 }
 
 Measurable3D* M5StackSystemContext::get_accelerometer() {
-    return &impl_->accelerometer;
+    return &get_impl()->accelerometer;
 }
 
 Measurable3D* M5StackSystemContext::get_gyroscope() {
-    return &impl_->gyroscope;
+    return &get_impl()->gyroscope;
 }
 
 Displayable* M5StackSystemContext::get_display() {
-    return &impl_->display;
+    return &get_impl()->display;
 }
 
 void M5StackSystemContext::begin() {
-    if (impl_->initialized) return;
-    
+    if (get_impl()->initialized) return;
+
     M5.begin();
-    impl_->serial0.connect();
-    impl_->accelerometer.begin();
-    impl_->gyroscope.begin();
-    
-    impl_->initialized = true;
+    get_impl()->serial0.connect();
+    get_impl()->accelerometer.begin();
+    get_impl()->gyroscope.begin();
+
+    get_impl()->initialized = true;
 }
 
 void M5StackSystemContext::update() {
     M5.update();
-    impl_->button_a.update();
-    impl_->button_b.update();
-    impl_->button_c.update();
+    get_impl()->button_a.update();
+    get_impl()->button_b.update();
+    get_impl()->button_c.update();
 }
 
 void M5StackSystemContext::delay(uint32_t ms) {

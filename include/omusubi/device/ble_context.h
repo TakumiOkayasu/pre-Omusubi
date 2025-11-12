@@ -96,7 +96,7 @@ public:
  *
  * 使用例（Peripheralモード - サーバー）:
  * @code
- * BLECommunication* ble = ctx.get_ble();
+ * BLEContext* ble = ctx.get_ble();
  *
  * // Peripheralモードで開始
  * ble->begin_peripheral("M5Stack-BLE"_sv);
@@ -120,7 +120,7 @@ public:
  *
  * 使用例（Centralモード - クライアント）:
  * @code
- * BLECommunication* ble = ctx.get_ble();
+ * BLEContext* ble = ctx.get_ble();
  *
  * // Centralモードで開始
  * ble->begin_central("M5Stack-Central"_sv);
@@ -137,16 +137,16 @@ public:
  * }
  * @endcode
  */
-class BLECommunication
+class BLEContext
     : public Connectable
     , public Scannable {
 public:
-    BLECommunication() = default;
-    ~BLECommunication() override = default;
-    BLECommunication(const BLECommunication&) = delete;
-    BLECommunication& operator=(const BLECommunication&) = delete;
-    BLECommunication(BLECommunication&&) = delete;
-    BLECommunication& operator=(BLECommunication&&) = delete;
+    BLEContext() = default;
+    ~BLEContext() override = default;
+    BLEContext(const BLEContext&) = delete;
+    BLEContext& operator=(const BLEContext&) = delete;
+    BLEContext(BLEContext&&) = delete;
+    BLEContext& operator=(BLEContext&&) = delete;
     
     // ========================================
     // モード管理

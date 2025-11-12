@@ -14,7 +14,7 @@ namespace omusubi {
  *
  * 使用例:
  * @code
- * SerialCommunication* serial = ctx.get_serial(0);
+ * SerialContext* serial = ctx.get_serial(0);
  *
  * // ボーレートを設定
  * serial->set_baud_rate(115200);
@@ -35,17 +35,17 @@ namespace omusubi {
  * serial->clear();
  * @endcode
  */
-class SerialCommunication
+class SerialContext
     : public Readable
     , public Writable
     , public Connectable {
 public:
-    SerialCommunication() = default;
-    ~SerialCommunication() override = default;
-    SerialCommunication(const SerialCommunication&) = delete;
-    SerialCommunication& operator=(const SerialCommunication&) = delete;
-    SerialCommunication(SerialCommunication&&) = delete;
-    SerialCommunication& operator=(SerialCommunication&&) = delete;
+    SerialContext() = default;
+    ~SerialContext() override = default;
+    SerialContext(const SerialContext&) = delete;
+    SerialContext& operator=(const SerialContext&) = delete;
+    SerialContext(SerialContext&&) = delete;
+    SerialContext& operator=(SerialContext&&) = delete;
 
     /** @brief ボーレートを設定 @param baud_rate ボーレート（例: 9600, 115200） */
     virtual void set_baud_rate(uint32_t baud_rate) = 0;

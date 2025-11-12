@@ -17,7 +17,7 @@ namespace omusubi {
  *
  * 使用例:
  * @code
- * BluetoothCommunication* bt = ctx.get_bluetooth();
+ * BluetoothContext* bt = ctx.get_bluetooth();
  *
  * // ローカルデバイス名を設定
  * bt->set_local_name("M5Stack-BT"_sv);
@@ -40,18 +40,18 @@ namespace omusubi {
  * }
  * @endcode
  */
-class BluetoothCommunication
+class BluetoothContext
     : public Readable
     , public Writable
     , public Connectable
     , public Scannable {
 public:
-    BluetoothCommunication() = default;
-    ~BluetoothCommunication() override = default;
-    BluetoothCommunication(const BluetoothCommunication&) = delete;
-    BluetoothCommunication& operator=(const BluetoothCommunication&) = delete;
-    BluetoothCommunication(BluetoothCommunication&&) = delete;
-    BluetoothCommunication& operator=(BluetoothCommunication&&) = delete;
+    BluetoothContext() = default;
+    ~BluetoothContext() override = default;
+    BluetoothContext(const BluetoothContext&) = delete;
+    BluetoothContext& operator=(const BluetoothContext&) = delete;
+    BluetoothContext(BluetoothContext&&) = delete;
+    BluetoothContext& operator=(BluetoothContext&&) = delete;
 
     /** @brief デバイス名で接続 @param device_name デバイス名 @param timeout_ms タイムアウト(ms) @return 成功ならtrue */
     virtual bool connect_to(StringView device_name, uint32_t timeout_ms = 0) = 0;

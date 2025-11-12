@@ -58,7 +58,7 @@ using namespace omusubi;
 using namespace omusubi::literals;
 
 SystemContext& ctx = get_system_context();
-SerialCommunication* serial = nullptr;
+SerialContext* serial = nullptr;
 Pressable* button = nullptr;
 
 void setup() {
@@ -101,7 +101,7 @@ void log_message(Writable& output, StringView message) {
 }
 
 SystemContext& ctx = get_system_context();
-SerialCommunication* serial = nullptr;
+SerialContext* serial = nullptr;
 Displayable* display = nullptr;
 
 void setup() {
@@ -145,7 +145,7 @@ void monitor_sensor(Measurable3D& sensor, Writable& output) {
 }
 
 SystemContext& ctx = get_system_context();
-SerialCommunication* serial = nullptr;
+SerialContext* serial = nullptr;
 Measurable3D* accel = nullptr;
 Measurable3D* gyro = nullptr;
 
@@ -213,9 +213,9 @@ public:
 };
 
 SystemContext& ctx = get_system_context();
-SerialCommunication* serial = nullptr;
-BluetoothCommunication* bt = nullptr;
-WiFiCommunication* wifi = nullptr;
+SerialContext* serial = nullptr;
+BluetoothContext* bt = nullptr;
+WiFiContext* wifi = nullptr;
 
 void setup() {
     ctx.begin();
@@ -249,7 +249,7 @@ void loop() {
 インターフェース分離により、実際のハードウェアなしでもテストが可能です。
 ```cpp
 // テスト用のモック実装
-class MockSerial : public SerialCommunication {
+class MockSerial : public SerialContext {
 private:
     FixedString<1024> buffer_;
     
@@ -293,10 +293,10 @@ uint32_t free_mem = ctx.get_free_memory();
 uint32_t uptime = ctx.get_uptime_ms();
 
 // 通信デバイス
-SerialCommunication* serial = ctx.get_serial(0);
-BluetoothCommunication* bt = ctx.get_bluetooth();
-WiFiCommunication* wifi = ctx.get_wifi();
-BLECommunication* ble = ctx.get_ble();
+SerialContext* serial = ctx.get_serial(0);
+BluetoothContext* bt = ctx.get_bluetooth();
+WiFiContext* wifi = ctx.get_wifi();
+BLEContext* ble = ctx.get_ble();
 
 // 入力デバイス
 Pressable* button = ctx.get_button(0);
@@ -320,7 +320,7 @@ ctx.reset();
 
 #### シリアル通信
 ```cpp
-SerialCommunication* serial = ctx.get_serial(0);
+SerialContext* serial = ctx.get_serial(0);
 
 serial->set_baud_rate(115200);
 serial->connect();
@@ -336,7 +336,7 @@ if (serial->has_data()) {
 
 #### Bluetooth通信
 ```cpp
-BluetoothCommunication* bt = ctx.get_bluetooth();
+BluetoothContext* bt = ctx.get_bluetooth();
 
 // ローカル名を設定
 bt->set_local_name("M5Stack-BT"_sv);
@@ -360,7 +360,7 @@ for (uint8_t i = 0; i < count; ++i) {
 
 #### Wi-Fi通信
 ```cpp
-WiFiCommunication* wifi = ctx.get_wifi();
+WiFiContext* wifi = ctx.get_wifi();
 
 // WiFi接続
 if (wifi->connect_to("SSID"_sv, "Password"_sv, 10000)) {
@@ -381,7 +381,7 @@ for (uint8_t i = 0; i < count; ++i) {
 
 #### BLE通信
 ```cpp
-BLECommunication* ble = ctx.get_ble();
+BLEContext* ble = ctx.get_ble();
 
 // Peripheralモード（サーバー）
 ble->begin_peripheral("M5Stack-BLE"_sv);

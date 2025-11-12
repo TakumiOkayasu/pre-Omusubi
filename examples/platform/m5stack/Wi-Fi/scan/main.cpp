@@ -9,8 +9,8 @@ using namespace omusubi::literals;
 
 // グローバル変数：setup()で一度だけ取得し、loop()で再利用
 SystemContext& ctx = get_system_context();
-SerialCommunication* serial = nullptr;
-WiFiCommunication* wifi = nullptr;
+SerialContext* serial = nullptr;
+WiFiContext* wifi = nullptr;
 Pressable* button_a = nullptr;
 
 void setup() {
