@@ -12,13 +12,13 @@ TARGET = main
 
 # Source files
 MAIN_SRC = main.cpp
-LIB_SRCS = $(wildcard $(SRC_DIR)/*.cpp)
+LIB_SRCS = $(shell find $(SRC_DIR) -type f -name '*.cpp')
 
 # Header files
-HEADERS = $(wildcard $(INC_DIR)/*.h)
+HEADERS = $(shell find $(INC_DIR) -type f \( -name '*.h' -o -name '*.hpp' \))
 
-# Object files
-LIB_OBJS = $(LIB_SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+# Object files (maintain directory structure in obj/)
+LIB_OBJS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(LIB_SRCS))
 
 # Default target
 all: $(TARGET)
@@ -28,12 +28,9 @@ $(TARGET): $(MAIN_SRC) $(LIB_OBJS) $(HEADERS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(MAIN_SRC) $(LIB_OBJS)
 
 # Compile library source files to object files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS) | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Create obj directory if it doesn't exist
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
 
 # Clean build artifacts
 clean:
