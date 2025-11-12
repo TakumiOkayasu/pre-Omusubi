@@ -16,5 +16,6 @@
 #include "device/serial_communication.h"
 #include "device/bluetooth_communication.h"
 #include "device/wifi_communication.h"
+#include "device/ble_communication.h"
 
 #include "system_context.h"

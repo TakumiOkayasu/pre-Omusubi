@@ -1,13 +1,16 @@
 #pragma once
 
 #include <cstdint>
-#include "omusubi/core/string_view.hpp"
+#include "omusubi/core/string_view.h"
 #include "omusubi/core/fixed_string.hpp"
-#include "omusubi/interface/connectable.hpp"
-#include "omusubi/interface/scannable.hpp"
-#include "omusubi/interface/ble_service.hpp"
+#include "omusubi/interface/connectable.h"
+#include "omusubi/interface/scannable.h"
 
 namespace omusubi {
+
+// 前方宣言
+class BLEService;
+class BLECharacteristic;
 
 /**
  * @brief BLE動作モード
@@ -16,6 +19,66 @@ enum class BLEMode : uint8_t {
     idle,       ///< 未初期化
     central,    ///< Centralモード（クライアント）
     peripheral  ///< Peripheralモード（サーバー）
+};
+
+/**
+ * @brief BLE Characteristic プロパティ
+ */
+enum class BLECharacteristicProperty : uint16_t {
+    broadcast = 0x0001,
+    read = 0x0002,
+    write_without_response = 0x0004,
+    write = 0x0008,
+    notify = 0x0010,
+    indicate = 0x0020,
+    authenticated_signed_writes = 0x0040,
+    extended_properties = 0x0080
+};
+
+/**
+ * @brief BLE Characteristic
+ */
+class BLECharacteristic {
+public:
+    BLECharacteristic() = default;
+    virtual ~BLECharacteristic() = default;
+    BLECharacteristic(const BLECharacteristic&) = delete;
+    BLECharacteristic& operator=(const BLECharacteristic&) = delete;
+
+    virtual FixedString<64> get_uuid() const = 0;
+    virtual uint16_t get_properties() const = 0;
+
+    virtual bool can_read() const = 0;
+    virtual bool can_write() const = 0;
+    virtual bool can_notify() const = 0;
+    virtual bool can_indicate() const = 0;
+
+    virtual FixedString<512> read_string() = 0;
+    virtual uint32_t read_bytes(uint8_t* buffer, uint32_t max_length) = 0;
+
+    virtual void write_string(StringView value) = 0;
+    virtual void write_bytes(const uint8_t* data, uint32_t length) = 0;
+
+    virtual void notify(const uint8_t* data, uint32_t length) = 0;
+    virtual void indicate(const uint8_t* data, uint32_t length) = 0;
+};
+
+/**
+ * @brief BLE Service
+ */
+class BLEService {
+public:
+    BLEService() = default;
+    virtual ~BLEService() = default;
+    BLEService(const BLEService&) = delete;
+    BLEService& operator=(const BLEService&) = delete;
+
+    virtual FixedString<64> get_uuid() const = 0;
+
+    virtual BLECharacteristic* add_characteristic(StringView uuid, uint16_t properties) = 0;
+    virtual BLECharacteristic* get_characteristic(StringView uuid) = 0;
+    virtual uint8_t get_characteristic_count() const = 0;
+    virtual BLECharacteristic* get_characteristic_at(uint8_t index) = 0;
 };
 
 /**
