@@ -25,19 +25,19 @@ namespace m5stack {
 class M5StackSystemContext : public SystemContext {
 private:
     // デバイスを所有するContext（先に初期化）
-    M5StackConnectableContext connectable_;
+    mutable M5StackConnectableContext connectable_;
 
     // デバイスへの参照を持つContext（後に初期化）
-    M5StackReadableContext readable_;
-    M5StackWritableContext writable_;
-    M5StackScannableContext scannable_;
+    mutable M5StackReadableContext readable_;
+    mutable M5StackWritableContext writable_;
+    mutable M5StackScannableContext scannable_;
 
     // 独立したContext
-    M5StackSensorContext sensor_;
-    M5StackInputContext input_;
-    M5StackOutputContext output_;
-    M5StackSystemInfoContext system_info_;
-    M5StackPowerContext power_;
+    mutable M5StackSensorContext sensor_;
+    mutable M5StackInputContext input_;
+    mutable M5StackOutputContext output_;
+    mutable M5StackSystemInfoContext system_info_;
+    mutable M5StackPowerContext power_;
 
 public:
     // コンストラクタ（get_system_context()内でのみ使用される）
@@ -61,15 +61,15 @@ public:
     // カテゴリ別コンテキストアクセス
     // ========================================
 
-    ConnectableContext* get_connectable_context() override { return &connectable_; }
-    ReadableContext* get_readable_context() override { return &readable_; }
-    WritableContext* get_writable_context() override { return &writable_; }
-    ScannableContext* get_scannable_context() override { return &scannable_; }
-    SensorContext* get_sensor_context() override { return &sensor_; }
-    InputContext* get_input_context() override { return &input_; }
-    OutputContext* get_output_context() override { return &output_; }
-    SystemInfoContext* get_system_info_context() override { return &system_info_; }
-    PowerContext* get_power_context() override { return &power_; }
+    ConnectableContext* get_connectable_context() const override { return &connectable_; }
+    ReadableContext* get_readable_context() const override { return &readable_; }
+    WritableContext* get_writable_context() const override { return &writable_; }
+    ScannableContext* get_scannable_context() const override { return &scannable_; }
+    SensorContext* get_sensor_context() const override { return &sensor_; }
+    InputContext* get_input_context() const override { return &input_; }
+    OutputContext* get_output_context() const override { return &output_; }
+    SystemInfoContext* get_system_info_context() const override { return &system_info_; }
+    PowerContext* get_power_context() const override { return &power_; }
 };
 
 }  // namespace m5stack
