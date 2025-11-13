@@ -506,6 +506,7 @@ public:
 - **String literals:** Use `_sv` suffix (requires `using namespace omusubi::literals`)
 - **Header guards:** Use `#pragma once`
 - **Memory:** No heap allocation - stack or placement new with static buffers only
+- **Comments:** Do not write unnecessary comments. Only add comments when they provide essential information that cannot be inferred from the code itself. Implementation details should be self-evident from the code structure
 
 ## Core Types
 
