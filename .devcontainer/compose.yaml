@@ -1,5 +1,5 @@
 services:
-  cakephp:
+  omusubi-dev:
     build:
       context: .
       dockerfile: Dockerfile
@@ -8,12 +8,5 @@ services:
         USER_UID: ${USER_UID}
         USER_GID: ${USER_GID}
     command: sleep infinity
-    networks:
-      - db-common-network
-    ports:
-      - "8765:8765"
     env_file:
       - ./.env
-
-networks:
-  db-common-network:

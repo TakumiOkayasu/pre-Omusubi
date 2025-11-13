@@ -30,10 +30,11 @@ Omusubi is a lightweight, type-safe C++14 framework for embedded devices (primar
 This project is developed in a Dev Container environment.
 
 **Environment Specifications:**
-- **Base Image:** `silkeh/clang:latest`
-- **Compiler:** Clang (C++14 support)
+- **Base Image:** `ubuntu:latest`
+- **Compiler:** Clang/Clang++ (C++14 support, installed via apt)
 - **Build Tools:** Make, CMake, Ninja
 - **Debug Tools:** GDB, Valgrind
+- **Code Quality Tools:** clang-format, clang-tidy, clangd, bear
 - **Locale:** ja_JP.UTF-8 (Japanese environment)
 - **Timezone:** Asia/Tokyo
 
@@ -68,6 +69,93 @@ make run
 ```
 
 The Makefile uses recursive file discovery with `$(shell find)` to automatically detect all `.cpp` files in `src/` and maintain directory structure in `obj/`.
+
+## Code Quality Tools
+
+### Formatter: clang-format
+
+**Automatic formatting on save:**
+- Enabled in your global VS Code settings
+- Formats C++ code automatically when you save a file
+- Default formatter is set to clang-format for C++ files
+
+**Manual formatting:**
+```bash
+# Format a single file
+clang-format -i path/to/file.cpp
+
+# Format all C++ files in the project
+find include src -name "*.h" -o -name "*.hpp" -o -name "*.cpp" | xargs clang-format -i
+```
+
+**VS Code shortcuts:**
+- `Shift + Alt + F` (Linux/Windows) or `Shift + Option + F` (Mac) - Format current file
+- Right-click → "Format Document"
+
+**Configuration:**
+- Style defined in `.clang-format` at project root
+- Based on LLVM style with customizations for embedded C++ development
+- Enforces consistent naming conventions and indentation
+- Format on save is enabled globally (not in devcontainer settings)
+
+### Linter: clang-tidy
+
+**Real-time linting:**
+- Integrated with clangd language server
+- Shows warnings and suggestions as you type
+- Appears as squiggly lines in the editor
+
+**Manual linting:**
+```bash
+# Lint a single file
+clang-tidy path/to/file.cpp -- -Iinclude -std=c++14
+
+# Lint all source files
+find src -name "*.cpp" | xargs -I {} clang-tidy {} -- -Iinclude -std=c++14
+```
+
+**Configuration:**
+- Rules defined in `.clang-tidy` at project root
+- Enforces:
+  - Bug-prone pattern detection
+  - Modern C++ best practices (C++14)
+  - Performance optimizations
+  - Readability guidelines
+  - Embedded-specific constraints (no heap allocation, etc.)
+
+**Key checks enabled:**
+- `bugprone-*` - Detect common bugs
+- `cert-*` - CERT secure coding guidelines
+- `cppcoreguidelines-*` - C++ Core Guidelines
+- `performance-*` - Performance improvements
+- `readability-*` - Code readability
+- `modernize-*` - Modern C++14 idioms
+
+**Naming conventions enforced:**
+- Classes/Structs: `CamelCase`
+- Functions/variables: `snake_case`
+- Constants/Enums: `UPPER_CASE`
+- Private members: `snake_case_` (trailing underscore)
+- Namespaces: `snake_case`
+
+### Best Practices
+
+**Before committing code:**
+1. Ensure all files are formatted (automatic on save)
+2. Review and fix all clang-tidy warnings
+3. Run `make` to verify compilation
+4. Check for any diagnostic messages in VS Code
+
+**Ignoring specific warnings:**
+```cpp
+// NOLINTNEXTLINE(rule-name)
+code_that_needs_exception;
+
+// NOLINT
+line_to_ignore;
+```
+
+Use sparingly and only when absolutely necessary with clear justification.
 
 ## Architecture: Method Chain Design
 

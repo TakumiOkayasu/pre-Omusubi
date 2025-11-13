@@ -1,16 +1,18 @@
-FROM silkeh/clang:latest
+FROM ubuntu:latest
 
-ARG USER_NAME ${USER_NAME}
-ARG USER_UID  ${USER_UID}
-ARG USER_GID  ${USER_GID}
+ARG USER_NAME
+ARG USER_UID
+ARG USER_GID
 
 ENV TZ=Asia/Tokyo \
     LANG=ja_JP.UTF-8 \
     LANGUAGE=ja_JP:jp \
     LC_ALL=ja_JP.UTF-8 \
-    DEVCONTAINER=true
+    DEVCONTAINER=true \
+    DEBIAN_FRONTEND=noninteractive
 
 RUN apt update && apt upgrade -y && apt install -y --no-install-recommends \
+    # Basic utilities
     bash \
     curl \
     git \
@@ -19,13 +21,21 @@ RUN apt update && apt upgrade -y && apt install -y --no-install-recommends \
     unzip \
     locales \
     tzdata \
-    build-essential \
     ca-certificates \
+    # C++ compiler and build tools
+    build-essential \
+    clang \
     cmake \
     ninja-build \
+    # Debug tools
     gdb \
     valgrind \
     pkg-config \
+    # Code quality tools
+    clang-format \
+    clang-tidy \
+    clangd \
+    bear \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && locale-gen ja_JP.UTF-8 \
@@ -45,4 +55,3 @@ RUN curl -o ./create_user.sh https://raw.githubusercontent.com/TakumiOkayasu/she
 WORKDIR /workspace
 USER ${USER_NAME}
 SHELL ["/bin/bash", "-c"]
-

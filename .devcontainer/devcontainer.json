@@ -1,29 +1,38 @@
 {
-	"name": "cakePHP Environment",
+	"name": "Omusubi C++ Development Environment",
 	"dockerComposeFile": "compose.yaml",
-	"service": "cakephp",
+	"service": "omusubi-dev",
 	"workspaceFolder": "/workspace",
 	"mounts": [
 		"source=${localWorkspaceFolder}/,target=/workspace,type=bind"
-	],
-	"forwardPorts": [
-		8765
 	],
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"eamodio.gitlens",
 				"pizzacat83.codic",
-				"xdebug.php-debug",
-				"DEVSENSE.phptools-vscode",
-				"junstyle.php-cs-fixer",
-				"DEVSENSE.composer-php-vscode",
 				"sourcegraph.cody-ai",
 				"openai.openai-chatgpt-adhoc",
-				"VisualStudioExptTeam.vscodeintellicode"
+				"VisualStudioExptTeam.vscodeintellicode",
+				"ms-vscode.cpptools",
+				"ms-vscode.cpptools-extension-pack",
+				"llvm-vs-code-extensions.vscode-clangd",
+				"ms-vscode.cmake-tools",
+				"twxs.cmake",
+				"xaver.clang-format",
+				"notskm.clang-tidy"
 			],
 			"settings": {
-				"terminal.integrated.defaultProfile.linux": "bash"
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"clang-format.executable": "/usr/bin/clang-format",
+				"clang-format.style": "file",
+				"clangd.arguments": [
+					"--background-index",
+					"--clang-tidy",
+					"--header-insertion=iwyu",
+					"--completion-style=detailed"
+				],
+				"C_Cpp.intelliSenseEngine": "disabled"
 			}
 		}
 	},
