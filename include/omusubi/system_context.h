@@ -17,25 +17,6 @@ class PowerContext;
 
 /**
  * @brief システムコンテキスト
- *
- * デバイス全体のシステム制御とカテゴリ別コンテキストへのアクセスを提供します。
- * すべてのハードウェアアクセスはこのクラスを経由します。
- *
- * 使用例:
- * @code
- * SystemContext& ctx = get_system_context();
- *
- * // システム初期化
- * ctx.begin();
- *
- * // デバイスアクセス
- * SerialContext* serial = ctx.get_connectable_context()->get_serial0_context();
- * serial->connect();
- * serial->write("Hello"_sv);
- *
- * // システム更新
- * ctx.update();
- * @endcode
  */
 class SystemContext {
 public:

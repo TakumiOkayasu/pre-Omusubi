@@ -96,7 +96,7 @@ void setup() {
     input = ctx.get_input_context();
 
     // デバイスの取得
-    serial = connectable->get_serial0_context();
+    serial = connectable->get_serial_context(0);
     button = input->get_button_a_context();
 
     serial->write_line("Hello, Omusubi!"_sv);

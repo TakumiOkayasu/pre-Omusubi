@@ -10,17 +10,6 @@ namespace omusubi {
 
 /**
  * @brief 出力デバイスのコンテキスト
- *
- * ディスプレイ、LED、スピーカーなど、出力機能を持つデバイスへのアクセスを提供します。
- *
- * 使用例:
- * @code
- * OutputContext* output = ctx.get_output();
- *
- * // ディスプレイを取得
- * // DisplayContext* display = output->get_display_context();
- * // display->display("Hello"_sv);
- * @endcode
  */
 class OutputContext {
 public:

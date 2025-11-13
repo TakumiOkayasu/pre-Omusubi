@@ -8,23 +8,6 @@ namespace omusubi {
 
 /**
  * @brief シリアル通信デバイス
- *
- * UART/USBシリアル通信を扱います。
- * Readable、Writable、Connectableインターフェースを実装しています。
- *
- * 使用例:
- * @code
- * SerialContext* serial = ctx.get_connectable_context()->get_serial0_context();
- *
- * // 接続
- * serial->connect();
- *
- * // データ送信
- * serial->write("Hello, Serial!"_sv);
- *
- * // データ受信
- * FixedBuffer<256> data = serial->read();
- * @endcode
  */
 class SerialContext
     : public Readable

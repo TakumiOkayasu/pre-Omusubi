@@ -9,17 +9,6 @@ namespace omusubi {
 
 /**
  * @brief 入力デバイスのコンテキスト
- *
- * ボタン、タッチパネルなど、入力機能を持つデバイスへのアクセスを提供します。
- *
- * 使用例:
- * @code
- * InputContext* input = ctx.get_input();
- *
- * // ボタン0を取得
- * // ButtonContext* button = input->get_button0_context();
- * // ButtonState state = button->get_state();
- * @endcode
  */
 class InputContext {
 public:

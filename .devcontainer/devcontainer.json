@@ -2,17 +2,22 @@
 	"name": "Omusubi C++ Development Environment",
 	"build": {
 		"dockerfile": "Dockerfile",
-		"context": "."
+		"context": ".",
+		"args": {
+			"USERNAME": "vscode",
+			"USER_UID": "1000",
+			"USER_GID": "1000"
+		}
 	},
 	"workspaceFolder": "/workspace",
 	"containerUser": "vscode",
 	"mounts": [
 		"source=${localWorkspaceFolder}/,target=/workspace,type=bind",
-		"source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind",
-		"source=${localEnv:HOME}/.claude.json,target=/home/vscode/.claude.json,type=bind",
-		"source=${localEnv:HOME}/.cache/claude-cli-nodejs,target=/home/vscode/.cache/claude-cli-nodejs,type=bind"
+		"source=${localEnv:HOME}/.claude,target=${containerEnv:HOME}/.claude,type=bind",
+		"source=${localEnv:HOME}/.claude.json,target=${containerEnv:HOME}/.claude.json,type=bind",
+		"source=${localEnv:HOME}/.cache/claude-cli-nodejs,target=${containerEnv:HOME}/.cache/claude-cli-nodejs,type=bind",
+		"source=platformio-cache,target=${containerEnv:HOME}/.platformio,type=volume"
 	],
-	"remoteUser": "vscode",
 	"customizations": {
 		"vscode": {
 			"extensions": [

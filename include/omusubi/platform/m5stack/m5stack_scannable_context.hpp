@@ -31,9 +31,9 @@ public:
 
     ~M5StackScannableContext() override = default;
 
-    BluetoothContext* get_bluetooth_context() override { return bluetooth_; }
-    WiFiContext* get_wifi_context() override { return wifi_; }
-    BLEContext* get_ble_context() override { return ble_; }
+    BluetoothContext* get_bluetooth_context() const override { return bluetooth_; }
+    WiFiContext* get_wifi_context() const override { return wifi_; }
+    BLEContext* get_ble_context() const override { return ble_; }
 };
 
 }  // namespace m5stack

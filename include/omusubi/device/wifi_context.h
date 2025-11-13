@@ -7,20 +7,6 @@ namespace omusubi {
 
 /**
  * @brief WiFi通信デバイス
- *
- * WiFi接続、ネットワークスキャンを扱います。
- * Connectable、Scannableインターフェースを実装しています。
- *
- * 使用例:
- * @code
- * WiFiContext* wifi = ctx.get_connectable()->get_wifi_context();
- *
- * // WiFiに接続
- * wifi->connect();
- *
- * // ネットワークスキャン
- * uint8_t count = wifi->scan();
- * @endcode
  */
 class WiFiContext
     : public Connectable

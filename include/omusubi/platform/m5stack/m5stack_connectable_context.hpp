@@ -18,23 +18,28 @@ namespace m5stack {
  */
 class M5StackConnectableContext : public ConnectableContext {
 private:
-    M5StackSerialContext serial0_{0};
-    M5StackSerialContext serial1_{1};
-    M5StackSerialContext serial2_{2};
-    M5StackBluetoothContext bluetooth_;
-    M5StackWiFiContext wifi_;
-    M5StackBLEContext ble_;
+    mutable M5StackSerialContext serials_[3]{
+        M5StackSerialContext(0),
+        M5StackSerialContext(1),
+        M5StackSerialContext(2)
+    };
+    mutable M5StackBluetoothContext bluetooth_;
+    mutable M5StackWiFiContext wifi_;
+    mutable M5StackBLEContext ble_;
 
 public:
     M5StackConnectableContext() = default;
     ~M5StackConnectableContext() override = default;
 
-    SerialContext* get_serial0_context() override { return &serial0_; }
-    SerialContext* get_serial1_context() override { return &serial1_; }
-    SerialContext* get_serial2_context() override { return &serial2_; }
-    BluetoothContext* get_bluetooth_context() override { return &bluetooth_; }
-    WiFiContext* get_wifi_context() override { return &wifi_; }
-    BLEContext* get_ble_context() override { return &ble_; }
+    SerialContext* get_serial_context(uint8_t port) const override {
+        return (port < 3) ? &serials_[port] : nullptr;
+    }
+
+    uint8_t get_serial_count() const override { return 3; }
+
+    BluetoothContext* get_bluetooth_context() const override { return &bluetooth_; }
+    WiFiContext* get_wifi_context() const override { return &wifi_; }
+    BLEContext* get_ble_context() const override { return &ble_; }
 };
 
 }  // namespace m5stack

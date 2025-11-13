@@ -13,14 +13,14 @@ namespace m5stack {
 M5StackSystemContext::M5StackSystemContext()
     : connectable_()
     , readable_(
-        connectable_.get_serial0_context(),
-        connectable_.get_serial1_context(),
-        connectable_.get_serial2_context(),
+        connectable_.get_serial_context(0),
+        connectable_.get_serial_context(1),
+        connectable_.get_serial_context(2),
         connectable_.get_bluetooth_context())
     , writable_(
-        connectable_.get_serial0_context(),
-        connectable_.get_serial1_context(),
-        connectable_.get_serial2_context(),
+        connectable_.get_serial_context(0),
+        connectable_.get_serial_context(1),
+        connectable_.get_serial_context(2),
         connectable_.get_bluetooth_context())
     , scannable_(
         connectable_.get_bluetooth_context(),
@@ -42,7 +42,7 @@ void M5StackSystemContext::begin() {
     M5.begin();
 
     // Serial0を自動的に接続
-    connectable_.get_serial0_context()->connect();
+    connectable_.get_serial_context(0)->connect();
 }
 
 void M5StackSystemContext::update() {

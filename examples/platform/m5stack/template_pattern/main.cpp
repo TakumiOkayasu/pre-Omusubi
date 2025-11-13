@@ -50,14 +50,14 @@ void setup() {
     // デバイスの取得（一度だけ）
     connectable = ctx.get_connectable_context();
 
-    // パターン1: 個別メソッド（従来型）
-    auto* serial0_old = connectable->get_serial0_context();
-    serial0_old->connect();
-    serial0_old->write_line("Pattern 1: Individual method"_sv);
+    // パターン1: 実行時パラメータ
+    auto* serial0_runtime = connectable->get_serial_context(0);
+    serial0_runtime->connect();
+    serial0_runtime->write_line("Pattern 1: Runtime parameter"_sv);
 
-    // パターン2: テンプレートパラメータ（新機能）
-    auto* serial0_new = connectable->get_serial_context<0>();
-    serial0_new->write_line("Pattern 2: Template parameter"_sv);
+    // パターン2: テンプレートパラメータ（コンパイル時）
+    auto* serial0_template = connectable->get_serial_context<0>();
+    serial0_template->write_line("Pattern 2: Template parameter"_sv);
 
     // パターン3: テンプレート関数での活用
     // コンパイル時にポート0と1を初期化

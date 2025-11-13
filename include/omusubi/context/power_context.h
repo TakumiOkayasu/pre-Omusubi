@@ -6,19 +6,6 @@ namespace omusubi {
 
 /**
  * @brief 電源管理コンテキスト
- *
- * 電源状態、バッテリーレベルなどの電源管理機能へのアクセスを提供します。
- *
- * 使用例:
- * @code
- * PowerContext* power = ctx.get_power();
- *
- * // 電源状態を取得
- * PowerState state = power->get_power_state();
- *
- * // バッテリーレベルを取得
- * uint8_t level = power->get_battery_level();
- * @endcode
  */
 class PowerContext {
 public:

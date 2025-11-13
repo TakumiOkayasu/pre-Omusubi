@@ -163,36 +163,187 @@ Use sparingly and only when absolutely necessary with clear justification.
 
 **SystemContext is a gateway to organized device access through method chaining.**
 
-All hardware access follows this pattern:
+Basic hardware access follows this pattern:
 ```cpp
 get_system_context()->get_[category]_context()->get_[device]_context()->method()
 ```
 
-Example:
+Complex devices may extend beyond this with additional component layers (see Method Chain Patterns below).
+
+Example (Basic 3-layer):
 ```cpp
 // Bluetooth connection
 ctx->get_connectable_context()->get_bluetooth_context()->connect()
 
-// Serial reading
-ctx->get_readable_context()->get_serial0_context()->read_line()
+// Serial reading (runtime)
+ctx->get_readable_context()->get_serial_context(0)->read_line()
+
+// Serial reading (compile-time)
+ctx->get_readable_context()->get_serial_context<0>()->read_line()
 
 // Accelerometer sensor
 ctx->get_sensor_context()->get_accelerometer_context()->get_values()
 ```
 
+Example (Hierarchical 4+ layers):
+```cpp
+// BLE with Service and Characteristic
+ble->add_service(uuid)->add_characteristic(uuid, props)->write(data)
+
+// Complex devices may extend beyond DeviceContext
+```
+
+### Method Chain Patterns
+
+The framework supports two method chain patterns depending on device complexity:
+
+**Pattern 1: Basic (3-layer) - Most Common**
+```cpp
+SystemContext → CategoryContext → DeviceContext → method()
+```
+
+Applies to simple devices:
+```cpp
+// Serial communication
+ctx->get_connectable_context()->get_serial_context(0)->write("Hello"_sv);
+
+// WiFi connection
+ctx->get_connectable_context()->get_wifi_context()->connect_to(ssid, password);
+
+// Sensor reading
+ctx->get_sensor_context()->get_accelerometer_context()->get_values();
+```
+
+**Pattern 2: Hierarchical (4+ layers) - Component-based Devices**
+```cpp
+SystemContext → CategoryContext → DeviceContext → Component → method()
+```
+
+Applies to complex devices with sub-components:
+```cpp
+// BLE: Service and Characteristic
+BLEContext* ble = ctx->get_connectable_context()->get_ble_context();
+BLEService* service = ble->add_service(uuid);
+BLECharacteristic* ch = service->add_characteristic(uuid, properties);
+ch->write("Hello"_sv);
+
+// Future: HTTP Server
+HTTPServer* server = ctx->get_connectable_context()->get_http_server_context();
+HTTPRoute* route = server->add_route("/api/data");
+route->set_handler([](HTTPRequest& req) { /* ... */ });
+```
+
+**When to use hierarchical pattern:**
+- Device consists of multiple dynamically created sub-components
+- Components can be added/removed at runtime
+- Each component has its own state and methods
+- Components represent distinct domain concepts (Service/Characteristic, Route/Handler, etc.)
+
+**Component Layer Naming Rules:**
+
+1. **DO NOT use `*Context` suffix** - Component layer is NOT a Context
+   ```cpp
+   // ✅ Correct
+   BLECharacteristic, BLEService, HTTPRequest, File
+
+   // ❌ Wrong
+   BLECharacteristicContext, BLEServiceContext
+   ```
+
+2. **Prefer domain-standard terminology**
+   - BLE: Use official spec terms (`Service`, `Characteristic`)
+   - HTTP: Use web standards (`Request`, `Response`, `Route`)
+   - File system: Use OS terms (`File`, `Directory`)
+   - Graphics: Use industry terms (`Sprite`, `Canvas`, `Layer`)
+
+3. **Add device prefix when necessary**
+   - Use prefix to avoid naming conflicts
+   - Keep component names clear about ownership
+   ```cpp
+   BLECharacteristic  // Prefix avoids conflict with other "Characteristic" concepts
+   HTTPRequest        // Clear it belongs to HTTP
+   ```
+
+4. **Use namespaces for organization (optional)**
+   ```cpp
+   namespace ble {
+       class Service;
+       class Characteristic;
+   }
+   // Usage: ble::Characteristic
+   ```
+
+**Key Principle:**
+- Component layer represents **domain concepts**, not infrastructure
+- Naming should reflect the **user's mental model** of the domain
+- Prioritize **familiarity** over framework consistency
+
 ### Layer Structure
 
 ### 1. Interface Layer (`include/omusubi/interface/`)
-**`*able` interfaces define single-method contracts (following Android pattern):**
-- `Readable` - Single pure virtual function for reading
-- `Writable` - Single pure virtual function for writing
-- `Connectable` - Single pure virtual function for connecting
-- `Scannable` - Single pure virtual function for scanning
-- `Pressable` - Single pure virtual function for button state
-- `Measurable` / `Measurable3D` - Single pure virtual function for measurements
-- `Displayable` - Single pure virtual function for display output
+**`*able` interfaces define single-responsibility contracts (following Interface Segregation Principle):**
+- `Readable` - Reading data from devices
+- `Writable` - Writing data to devices
+- `Connectable` - Connection management (connect, disconnect, status)
+- `Scannable` - Network/device scanning (start, stop, results)
+- `Pressable` - Button state management
+- `Measurable` / `Measurable3D` - Sensor measurements
+- `Displayable` - Display output
 
-**Rule:** Each `*able` interface MUST have exactly one pure virtual function.
+**Interface Design Rule (ISP - Interface Segregation Principle):**
+
+Each `*able` interface MUST represent a **single responsibility**, but may contain multiple related methods to fulfill that responsibility.
+
+**Guidelines:**
+- ✅ **Single Responsibility**: Interface focuses on ONE capability (reading, writing, connecting, etc.)
+- ✅ **Related Methods**: Multiple methods that serve the same purpose are allowed
+- ❌ **No Mixed Responsibilities**: Don't combine unrelated capabilities in one interface
+
+**Examples:**
+
+```cpp
+// ✅ GOOD - Single responsibility: Scanning
+// Multiple methods serve the scanning purpose
+class Scannable {
+    virtual void start_scan() = 0;
+    virtual void stop_scan() = 0;
+    virtual uint8_t get_found_count() const = 0;
+    virtual FixedString<64> get_found_name(uint8_t index) const = 0;
+    virtual int32_t get_found_signal_strength(uint8_t index) const = 0;
+};
+
+// ✅ GOOD - Single responsibility: Connection management
+class Connectable {
+    virtual bool connect() = 0;
+    virtual void disconnect() = 0;
+    virtual bool is_connected() const = 0;
+};
+
+// ✅ GOOD - Single responsibility: Reading
+class Readable {
+    virtual FixedBuffer<256> read() = 0;
+    virtual uint32_t available() const = 0;
+    virtual FixedString<256> read_line() = 0;
+};
+
+// ❌ BAD - Multiple responsibilities mixed
+class NetworkDevice {
+    virtual bool connect() = 0;      // Connection responsibility
+    virtual uint8_t scan() = 0;      // Scanning responsibility
+    virtual FixedBuffer<256> read() = 0;  // Reading responsibility
+};
+// Instead: Inherit from Connectable + Scannable + Readable
+```
+
+**When to add methods to an interface:**
+- Methods directly support the interface's core responsibility
+- Methods are commonly used together
+- Separating them would make the API awkward
+
+**When to create a new interface:**
+- The capability is independent and can be used alone
+- Not all implementers need the capability
+- The responsibility is conceptually distinct
 
 ### 2. Context Layer (`include/omusubi/context/`)
 **Middle-tier contexts group devices by category and serve as DI containers:**
@@ -233,7 +384,15 @@ The Context layer is not just for grouping - it functions as a **Dependency Inje
 - `WiFiContext` (Connectable + Scannable)
 - `BLEContext` (Connectable + Scannable)
 
-### 4. Platform Layer (`include/omusubi/platform/`, `src/platform/`)
+### 4. Component Layer (`include/omusubi/interface/`) - Optional for Complex Devices
+**Sub-components for hierarchical devices (see Method Chain Patterns):**
+- `BLECharacteristic` (Readable + Writable) - BLE characteristic
+- `BLEService` - BLE service container
+- Future: `HTTPRequest`, `HTTPResponse`, `File`, `Directory`, etc.
+
+**Important:** Component layer does NOT use `*Context` naming. Uses domain-standard terminology instead.
+
+### 5. Platform Layer (`include/omusubi/platform/`, `src/platform/`)
 **Platform-specific implementations:**
 - `M5StackSystemContext` - SystemContext implementation for M5Stack
 - `M5StackConnectableContext` - ConnectableContext implementation
@@ -245,18 +404,23 @@ The Context layer is not just for grouping - it functions as a **Dependency Inje
 ```cpp
 class M5StackConnectableContext : public ConnectableContext {
 private:
-    M5StackSerialContext serial0_{0};
-    M5StackSerialContext serial1_{1};
-    M5StackBluetoothContext bluetooth_;
-    M5StackWiFiContext wifi_;
-    M5StackBLEContext ble_;
+    mutable M5StackSerialContext serials_[3]{
+        M5StackSerialContext(0),
+        M5StackSerialContext(1),
+        M5StackSerialContext(2)
+    };
+    mutable M5StackBluetoothContext bluetooth_;
+    mutable M5StackWiFiContext wifi_;
+    mutable M5StackBLEContext ble_;
 
 public:
-    SerialContext* get_serial0_context() override { return &serial0_; }
-    SerialContext* get_serial1_context() override { return &serial1_; }
-    BluetoothContext* get_bluetooth_context() override { return &bluetooth_; }
-    WiFiContext* get_wifi_context() override { return &wifi_; }
-    BLEContext* get_ble_context() override { return &ble_; }
+    SerialContext* get_serial_context(uint8_t port) const override {
+        return (port < 3) ? &serials_[port] : nullptr;
+    }
+    uint8_t get_serial_count() const override { return 3; }
+    BluetoothContext* get_bluetooth_context() const override { return &bluetooth_; }
+    WiFiContext* get_wifi_context() const override { return &wifi_; }
+    BLEContext* get_ble_context() const override { return &ble_; }
 };
 ```
 
@@ -432,23 +596,31 @@ SerialImpl& get_impl(uint8_t port) {
 
 The Context layer functions as a DI container and supports two access patterns:
 
-**Pattern A: Individual Methods (Primary)**
+**Pattern A: Runtime Parameters**
 ```cpp
-SerialContext* serial = ctx.get_connectable_context()->get_serial0_context();
+SerialContext* serial = ctx.get_connectable_context()->get_serial_context(0);
 ```
-- ✅ Explicit and clear
-- ✅ Available for all devices
+- ✅ Flexible for loops and dynamic port selection
+- ✅ Follows C++ getter convention with `get_` prefix
+- ✅ Clear indication that a Context object is returned
 
-**Pattern B: Template Parameters (C++14)**
+**Pattern B: Template Parameters (Compile-time)**
 ```cpp
 SerialContext* serial = ctx.get_connectable_context()->get_serial_context<0>();
 ```
-- ✅ Specify port number at compile time
+- ✅ Optimized at compile time
 - ✅ Supports template metaprogramming
-- ⚠️ Runtime values not allowed (compile-time constants only)
+- ⚠️ Port number must be compile-time constant
 
-**Runtime parameters are prohibited:**
-- ❌ Bad: `get_serial_context(port)` - Runtime arguments not allowed
+**For single-instance devices:**
+```cpp
+BluetoothContext* bt = ctx.get_connectable_context()->get_bluetooth_context();
+WiFiContext* wifi = ctx.get_connectable_context()->get_wifi_context();
+BLEContext* ble = ctx.get_connectable_context()->get_ble_context();
+```
+- ✅ Consistent `get_*_context()` naming pattern
+- ✅ Aligns with C++ naming conventions
+- ✅ Type name matches method name
 
 **3. Single Primary Access Path**
 - Devices with multiple interfaces have ONE primary category
@@ -465,7 +637,96 @@ SerialContext* serial = ctx.get_connectable_context()->get_serial_context<0>();
 - Functions/variables: `snake_case`
 - Classes: `PascalCase`
 
-**5. SystemContext Access: Free Function Pattern**
+**Context Getter Naming (Strict Rule):**
+All Context getter methods MUST follow this exact pattern:
+```cpp
+get_*_context()  // Required format
+```
+- ✅ `get_` prefix (C++ getter convention)
+- ✅ `_context` suffix (matches return type)
+- ❌ No exceptions allowed
+
+Examples:
+```cpp
+// ✅ Correct
+SerialContext* get_serial_context(uint8_t port) const;
+BluetoothContext* get_bluetooth_context() const;
+
+// ❌ Wrong - missing get_ prefix
+SerialContext* serial_context(uint8_t port) const;
+
+// ❌ Wrong - missing _context suffix
+SerialContext* get_serial(uint8_t port) const;
+```
+
+**5. Method Proliferation Prohibition (CRITICAL)**
+
+**禁止: Individual methods for each instance**
+```cpp
+// ❌ PROHIBITED - Violates DRY principle
+virtual SerialContext* get_serial0_context() const = 0;
+virtual SerialContext* get_serial1_context() const = 0;
+virtual SerialContext* get_serial2_context() const = 0;
+```
+
+**問題点:**
+- DRY (Don't Repeat Yourself) 原則違反
+- メソッドが無限に増える可能性
+- メンテナンス性の低下
+- スケーラビリティの欠如
+
+**必須: Parameter-based access**
+```cpp
+// ✅ REQUIRED - Scalable and maintainable
+virtual SerialContext* get_serial_context(uint8_t port) const = 0;
+virtual uint8_t get_serial_count() const = 0;  // Required for loops
+
+// ✅ OPTIONAL - Template version for compile-time
+template<uint8_t Port>
+SerialContext* get_serial_context() const {
+    static_assert(Port < 3, "Port out of range");
+    return get_serial_context(Port);
+}
+```
+
+**Multi-instance Device Requirements:**
+When implementing devices with multiple instances (serial ports, buttons, etc.):
+1. **Runtime parameter method** (必須)
+2. **Count getter method** (必須) - for iteration
+3. **Template parameter method** (推奨) - for compile-time optimization
+
+**Implementation Pattern (Array-based):**
+```cpp
+// ✅ RECOMMENDED - Array-based management
+class M5StackConnectableContext : public ConnectableContext {
+private:
+    mutable M5StackSerialContext serials_[3]{
+        M5StackSerialContext(0),
+        M5StackSerialContext(1),
+        M5StackSerialContext(2)
+    };
+
+public:
+    SerialContext* get_serial_context(uint8_t port) const override {
+        return (port < 3) ? &serials_[port] : nullptr;
+    }
+    uint8_t get_serial_count() const override { return 3; }
+};
+```
+
+```cpp
+// ❌ NOT RECOMMENDED - Individual member variables
+class BadExample : public ConnectableContext {
+private:
+    M5StackSerialContext serial0_;
+    M5StackSerialContext serial1_;
+    M5StackSerialContext serial2_;
+
+    // Requires switch statement or individual methods - poor scalability
+};
+```
+
+**6. SystemContext Access: Free Function Pattern**
 
 **IMPORTANT:** Always access SystemContext using the **free function** `get_system_context()`.
 
@@ -488,7 +749,7 @@ SystemContext& ctx = SystemContext::get_instance();  // This does not exist
 - The `get_system_context()` free function calls platform-specific implementation internally
 - This ensures user code remains unchanged when switching platforms
 
-**6. SystemContext Core Responsibilities**
+**7. SystemContext Core Responsibilities**
 ```cpp
 class SystemContext {
 public:
@@ -498,16 +759,16 @@ public:
     virtual void delay(uint32_t ms) = 0;
     virtual void reset() = 0;
 
-    // Category context access
-    virtual ConnectableContext* get_connectable_context() = 0;
-    virtual ReadableContext* get_readable_context() = 0;
-    virtual WritableContext* get_writable_context() = 0;
-    virtual ScannableContext* get_scannable_context() = 0;
-    virtual SensorContext* get_sensor_context() = 0;
-    virtual InputContext* get_input_context() = 0;
-    virtual OutputContext* get_output_context() = 0;
-    virtual SystemInfoContext* get_system_info_context() = 0;
-    virtual PowerContext* get_power_context() = 0;
+    // Category context access (all must have const)
+    virtual ConnectableContext* get_connectable_context() const = 0;
+    virtual ReadableContext* get_readable_context() const = 0;
+    virtual WritableContext* get_writable_context() const = 0;
+    virtual ScannableContext* get_scannable_context() const = 0;
+    virtual SensorContext* get_sensor_context() const = 0;
+    virtual InputContext* get_input_context() const = 0;
+    virtual OutputContext* get_output_context() const = 0;
+    virtual SystemInfoContext* get_system_info_context() const = 0;
+    virtual PowerContext* get_power_context() const = 0;
 };
 ```
 
@@ -575,10 +836,13 @@ public:
   - Classes: `PascalCase`
   - Namespaces: `snake_case`
   - Constants: `UPPER_CASE_WITH_UNDERSCORES`
+  - Enum class values: `UPPER_CASE_WITH_UNDERSCORES` (treated as immutable constants)
+  - Component layer: Domain-standard terminology (e.g., `BLECharacteristic`, `HTTPRequest`), NOT `*Context`
 - **Macros:** Prohibited - Use `constexpr` functions and variables instead
 - **String literals:** Use `_sv` suffix (requires `using namespace omusubi::literals`)
 - **Header guards:** Use `#pragma once`
 - **Memory:** No heap allocation - stack or placement new with static buffers only
+- **Getter Methods:** ALL getter methods MUST be marked `const`. Example: `HogeContext* get_hoge_context() const = 0;`. If a getter cannot be const, you MUST provide a clear justification explaining why
 - **Implementation Hiding:** When hiding platform-specific implementation details, do NOT expose implementation in headers (no `void* impl_`, no `struct Impl;` forward declarations). Place all implementation details in `.cpp` files using anonymous namespaces with static variables
 - **Static Variables in Implementation Files:** File-scope static variables in `.cpp` files must use the `static` keyword explicitly, even inside anonymous namespaces. Example: `static BluetoothImpl impl;` not just `BluetoothImpl impl;`
 - **Comments:** Do not write unnecessary comments. Only add comments when they provide essential information that cannot be inferred from the code itself. Implementation details should be self-evident from the code structure
@@ -612,8 +876,7 @@ void setup() {
     ctx.begin();
 
     // Retrieve device (once only)
-    // New design: access via method chain
-    serial = ctx.get_connectable_context()->get_serial0_context();
+    serial = ctx.get_connectable_context()->get_serial_context(0);
 
     // [Setup logic with comments]
 }
@@ -630,7 +893,7 @@ void loop() {
 
 **Example guidelines:**
 - Include clear Japanese comments explaining purpose and key steps
-- Use method chain to access devices: `ctx.get_[category]_context()->get_[device]_context()`
+- Use method chain: `ctx.get_[category]_context()->get_[device]_context()`
 - Retrieve device pointers once in `setup()`, store globally for performance
 - Keep examples focused on single functionality
 - Use serial output only (avoid display unless specifically demonstrating display)

@@ -7,20 +7,6 @@ namespace omusubi {
 
 /**
  * @brief BLE (Bluetooth Low Energy) 通信デバイス
- *
- * BLE 4.0以降の低電力Bluetooth通信を扱います。
- * Connectable、Scannableインターフェースを実装しています。
- *
- * 使用例:
- * @code
- * BLEContext* ble = ctx.get_connectable()->get_ble_context();
- *
- * // 接続
- * ble->connect();
- *
- * // スキャン
- * uint8_t count = ble->scan();
- * @endcode
  */
 class BLEContext
     : public Connectable

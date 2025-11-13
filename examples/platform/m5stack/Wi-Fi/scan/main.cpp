@@ -24,7 +24,7 @@ void setup() {
     input = ctx.get_input_context();
 
     // デバイスの取得（一度だけ）
-    serial = connectable->get_serial0_context();
+    serial = connectable->get_serial_context(0);
     wifi = connectable->get_wifi_context();
     button_a = input->get_button_a_context();
 

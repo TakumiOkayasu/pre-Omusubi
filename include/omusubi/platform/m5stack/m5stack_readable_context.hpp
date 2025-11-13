@@ -17,9 +17,7 @@ namespace m5stack {
  */
 class M5StackReadableContext : public ReadableContext {
 private:
-    SerialContext* serial0_;
-    SerialContext* serial1_;
-    SerialContext* serial2_;
+    SerialContext* serials_[3];
     BluetoothContext* bluetooth_;
 
 public:
@@ -28,17 +26,18 @@ public:
         SerialContext* serial1,
         SerialContext* serial2,
         BluetoothContext* bluetooth)
-        : serial0_(serial0)
-        , serial1_(serial1)
-        , serial2_(serial2)
+        : serials_{serial0, serial1, serial2}
         , bluetooth_(bluetooth) {}
 
     ~M5StackReadableContext() override = default;
 
-    SerialContext* get_serial0_context() override { return serial0_; }
-    SerialContext* get_serial1_context() override { return serial1_; }
-    SerialContext* get_serial2_context() override { return serial2_; }
-    BluetoothContext* get_bluetooth_context() override { return bluetooth_; }
+    SerialContext* get_serial_context(uint8_t port) const override {
+        return (port < 3) ? serials_[port] : nullptr;
+    }
+
+    uint8_t get_serial_count() const override { return 3; }
+
+    BluetoothContext* get_bluetooth_context() const override { return bluetooth_; }
 };
 
 }  // namespace m5stack

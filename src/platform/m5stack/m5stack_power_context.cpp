@@ -9,11 +9,11 @@ PowerState M5StackPowerContext::get_power_state() const {
     // M5Stackの電源状態を取得
     // TODO: より正確な実装が必要
     if (M5.Power.isChargeFull()) {
-        return PowerState::battery_full;
+        return PowerState::BATTERY_FULL;
     } else if (M5.Power.isCharging()) {
-        return PowerState::charging;
+        return PowerState::CHARGING;
     } else {
-        return PowerState::battery;
+        return PowerState::BATTERY;
     }
 }
 

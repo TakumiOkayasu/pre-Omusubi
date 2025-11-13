@@ -6,20 +6,6 @@ namespace omusubi {
 
 /**
  * @brief システム情報コンテキスト
- *
- * デバイス名、ファームウェアバージョン、チップID、稼働時間、空きメモリなど、
- * システム情報への読み取り専用アクセスを提供します。
- *
- * 使用例:
- * @code
- * SystemInfoContext* sys_info = ctx.get_system_info();
- *
- * // デバイス名を取得
- * FixedString<64> name = sys_info->get_device_name();
- *
- * // 稼働時間を取得
- * uint32_t uptime = sys_info->get_uptime_ms();
- * @endcode
  */
 class SystemInfoContext {
 public:
