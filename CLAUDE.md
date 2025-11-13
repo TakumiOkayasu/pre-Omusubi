@@ -2,16 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 重要：日本語でのコミュニケーション必須 (IMPORTANT: Japanese Communication Required)
+## CRITICAL: Japanese Communication Required
 
-**このプロジェクトでは、ユーザーとのコミュニケーションは日本語で行うことを必須とします。**
+**All communication with the user MUST be in Japanese.**
 
-- すべての応答は日本語で行ってください
-- コメントや説明は日本語で記述してください
-- コードのコメントも日本語を使用してください
-- 技術用語は英語のままでも構いませんが、説明は日本語で行ってください
+- All responses must be in Japanese
+- Comments and explanations must be in Japanese
+- Code comments must be in Japanese
+- Technical terms can remain in English, but explanations must be in Japanese
 
-**English responses are not acceptable. All communication with the user must be in Japanese.**
+**English responses to the user are not acceptable. This is a strict requirement.**
 
 ## Project Overview
 
@@ -27,28 +27,28 @@ Omusubi is a lightweight, type-safe C++14 framework for embedded devices (primar
 
 ### Dev Container
 
-このプロジェクトはDev Container環境で開発されています。
+This project is developed in a Dev Container environment.
 
-**環境仕様:**
-- **ベースイメージ:** `silkeh/clang:latest`
-- **コンパイラ:** Clang（C++14サポート）
-- **ビルドツール:** Make, CMake, Ninja
-- **デバッグツール:** GDB, Valgrind
-- **ロケール:** ja_JP.UTF-8（日本語環境）
-- **タイムゾーン:** Asia/Tokyo
+**Environment Specifications:**
+- **Base Image:** `silkeh/clang:latest`
+- **Compiler:** Clang (C++14 support)
+- **Build Tools:** Make, CMake, Ninja
+- **Debug Tools:** GDB, Valgrind
+- **Locale:** ja_JP.UTF-8 (Japanese environment)
+- **Timezone:** Asia/Tokyo
 
-**VS Code拡張機能:**
+**VS Code Extensions:**
 - GitLens
 - Claude Code (`ghcr.io/anthropics/devcontainer-features/claude-code:1.0.5`)
 - Docker outside of Docker
 
-**開始方法:**
+**Getting Started:**
 ```bash
-# VS Codeで開く
+# Open in VS Code
 code .
 
-# "Reopen in Container"を選択
-# → 自動的にDev Container環境が構築される
+# Select "Reopen in Container"
+# → Dev Container environment will be automatically built
 ```
 
 ## Build Commands
@@ -82,13 +82,13 @@ get_system_context()->get_[category]_context()->get_[device]_context()->method()
 
 Example:
 ```cpp
-// Bluetooth接続
+// Bluetooth connection
 ctx->get_connectable_context()->get_bluetooth_context()->connect()
 
-// シリアル読み取り
+// Serial reading
 ctx->get_readable_context()->get_serial0_context()->read_line()
 
-// 加速度センサー
+// Accelerometer sensor
 ctx->get_sensor_context()->get_accelerometer_context()->get_values()
 ```
 
@@ -109,15 +109,15 @@ ctx->get_sensor_context()->get_accelerometer_context()->get_values()
 ### 2. Context Layer (`include/omusubi/context/`)
 **Middle-tier contexts group devices by category and serve as DI containers:**
 
-Context層は単なるグループ化ではなく、**依存性注入（DI）コンテナ**として機能します：
+The Context layer is not just for grouping - it functions as a **Dependency Injection (DI) container**:
 
-**DIコンテナとしての役割:**
-- デバイスの生成と所有権管理
-- テスト時のモック差し替え
-- プラットフォーム切り替えの抽象化
-- デバイス間の依存関係の管理
+**DI Container Responsibilities:**
+- Device creation and ownership management
+- Mock substitution for testing
+- Platform switching abstraction
+- Dependency management between devices
 
-**カテゴリ別Context:**
+**Contexts by Category:**
 
 - `ConnectableContext` - All connection-capable devices
   - `SerialContext`, `BluetoothContext`, `WiFiContext`, `BLEContext`
@@ -174,26 +174,26 @@ public:
 
 **SystemContext Implementation Pattern:**
 
-プラットフォーム実装クラスは、以下のパターンに従います：
+Platform implementation classes follow this pattern:
 
 ```cpp
-// プラットフォーム実装（ユーザーは直接使用しない）
+// Platform implementation (users do not directly use this)
 class M5StackSystemContext : public SystemContext {
 private:
-    // コンストラクタはprivateまたはpublic（どちらでも可）
-    // ⚠️ get_instance()等のstaticメソッドは不要
+    // Constructor can be private or public (either works)
+    // ⚠️ No need for get_instance() or other static methods
     M5StackSystemContext();
 
 public:
-    // SystemContextインターフェースの実装
+    // SystemContext interface implementation
     void begin() override;
     void update() override;
     // ...
 };
 
-// プラットフォーム固有の実装ファイル（src/platform/m5stack/system_context.cpp）
+// Platform-specific implementation file (src/platform/m5stack/system_context.cpp)
 namespace omusubi {
-    // フリー関数内でstaticローカル変数として生成（Meyers Singleton）
+    // Created as static local variable in free function (Meyers Singleton)
     SystemContext& get_system_context() {
         static platform::m5stack::M5StackSystemContext inst;
         return inst;
@@ -201,14 +201,14 @@ namespace omusubi {
 }
 ```
 
-**コンストラクタのアクセス指定:**
-- `private`: より厳密（他からの直接生成を禁止）
-- `public`: シンプル（`get_system_context()`以外から生成されることはない前提）
-- どちらでも動作するが、`public`の方がシンプル
+**Constructor Access Specifier:**
+- `private`: More strict (prevents direct instantiation from elsewhere)
+- `public`: Simpler (assumes no instantiation outside `get_system_context()`)
+- Either works, but `public` is simpler
 
-**他のプラットフォームでも同じパターンを実装:**
+**Implement the same pattern for other platforms:**
 
-**重要:** `get_system_context()`は以下のパターンで実装することを徹底してください：
+**IMPORTANT:** Always implement `get_system_context()` using this pattern:
 
 ```cpp
 SystemContext& get_system_context() {
@@ -217,7 +217,7 @@ SystemContext& get_system_context() {
 }
 ```
 
-各プラットフォームでの実装例：
+Implementation examples for each platform:
 
 ```cpp
 // M5Stack (src/platform/m5stack/system_context.cpp)
@@ -245,20 +245,20 @@ namespace omusubi {
 }
 ```
 
-**このパターンの利点:**
-- シンプルで一貫性がある
-- C++11のthread-safe static initialization（Meyers Singleton）を活用
-- プラットフォーム実装クラスに`get_instance()`メソッドは不要
-- Singletonの実装が`get_system_context()`内に集約される
+**Benefits of this pattern:**
+- Simple and consistent
+- Leverages C++11 thread-safe static initialization (Meyers Singleton)
+- No need for `get_instance()` method in platform implementation classes
+- Singleton implementation is centralized in `get_system_context()`
 
-**ビルドシステムでの切り替え:**
-- ビルド時に対象プラットフォームの`system_context.cpp`のみをリンク
-- ユーザーコードは変更不要（常に`get_system_context()`を呼び出すだけ）
+**Build system switching:**
+- Only the target platform's `system_context.cpp` is linked at build time
+- User code remains unchanged (always just calls `get_system_context()`)
 
-**重要な原則:**
-- ユーザーコードは`get_system_context()`フリー関数のみを使用
-- `XXXSystemContext::get_instance()`は内部実装の詳細
-- プラットフォーム切り替え時も、ユーザーコードは変更不要
+**Key principles:**
+- User code only uses the `get_system_context()` free function
+- `XXXSystemContext::get_instance()` is an internal implementation detail
+- User code remains unchanged when switching platforms
 
 ### Critical Design Rules
 
@@ -269,25 +269,25 @@ namespace omusubi {
 
 **2. Context Getters: Two Access Patterns**
 
-Context層はDIコンテナとして機能し、2つのアクセスパターンをサポートします：
+The Context layer functions as a DI container and supports two access patterns:
 
-**パターンA: 個別メソッド（基本）**
+**Pattern A: Individual Methods (Primary)**
 ```cpp
 SerialContext* serial = ctx.get_connectable_context()->get_serial0_context();
 ```
-- ✅ 明示的でわかりやすい
-- ✅ すべてのデバイスで利用可能
+- ✅ Explicit and clear
+- ✅ Available for all devices
 
-**パターンB: テンプレートパラメータ（C++14）**
+**Pattern B: Template Parameters (C++14)**
 ```cpp
 SerialContext* serial = ctx.get_connectable_context()->get_serial_context<0>();
 ```
-- ✅ コンパイル時にポート番号を指定
-- ✅ テンプレートメタプログラミングに対応
-- ⚠️ ランタイム値は使用不可（コンパイル時定数のみ）
+- ✅ Specify port number at compile time
+- ✅ Supports template metaprogramming
+- ⚠️ Runtime values not allowed (compile-time constants only)
 
-**ランタイムパラメータは禁止:**
-- ❌ Bad: `get_serial_context(port)` - ランタイム引数は不可
+**Runtime parameters are prohibited:**
+- ❌ Bad: `get_serial_context(port)` - Runtime arguments not allowed
 
 **3. Single Primary Access Path**
 - Devices with multiple interfaces have ONE primary category
@@ -306,26 +306,26 @@ SerialContext* serial = ctx.get_connectable_context()->get_serial_context<0>();
 
 **5. SystemContext Access: Free Function Pattern**
 
-**重要:** SystemContextへのアクセスは必ず**フリー関数**`get_system_context()`を使用します。
+**IMPORTANT:** Always access SystemContext using the **free function** `get_system_context()`.
 
 ```cpp
-// フリー関数（グローバル名前空間）
+// Free function (global namespace)
 SystemContext& get_system_context();
 ```
 
-**使用方法:**
+**Usage:**
 ```cpp
-// ✅ 正しい：フリー関数を使用
+// ✅ Correct: Use free function
 SystemContext& ctx = get_system_context();
 
-// ❌ 誤り：クラスのstaticメソッドではない
-SystemContext& ctx = SystemContext::get_instance();  // これは存在しない
+// ❌ Wrong: Not a class static method
+SystemContext& ctx = SystemContext::get_instance();  // This does not exist
 ```
 
-**実装の詳細（ユーザーは意識する必要なし）:**
-- プラットフォーム実装（M5StackSystemContext等）は内部でSingletonパターンを使用してもよい
-- `get_system_context()`フリー関数が内部でプラットフォーム固有の実装を呼び出す
-- これにより、プラットフォーム切り替え時にユーザーコードの変更が不要
+**Implementation details (users don't need to worry about this):**
+- Platform implementations (M5StackSystemContext, etc.) may use Singleton pattern internally
+- The `get_system_context()` free function calls platform-specific implementation internally
+- This ensures user code remains unchanged when switching platforms
 
 **6. SystemContext Core Responsibilities**
 ```cpp
@@ -360,7 +360,7 @@ If code does not follow these design rules, it violates the framework's architec
 Users retrieve device pointers once in `setup()` and reuse them to avoid method call overhead:
 
 ```cpp
-// グローバル変数でキャッシュ（パフォーマンス重視）
+// Cache in global variables (performance-oriented)
 SystemContext& ctx = get_system_context();
 ConnectableContext* connectable = nullptr;
 BluetoothContext* bt = nullptr;
@@ -368,7 +368,7 @@ BluetoothContext* bt = nullptr;
 void setup() {
     ctx.begin();
 
-    // 一度だけ取得してキャッシュ
+    // Retrieve once and cache
     connectable = ctx.get_connectable_context();
     bt = connectable->get_bluetooth_context();
 }
@@ -376,7 +376,7 @@ void setup() {
 void loop() {
     ctx.update();
 
-    // キャッシュしたポインタを直接使用（オーバーヘッドなし）
+    // Use cached pointer directly (no overhead)
     bt->connect();
 }
 ```
@@ -393,7 +393,7 @@ private:
 public:
     MyDevice(SystemContext& ctx)
         : bt_(ctx.get_connectable_context()->get_bluetooth_context()) {
-        // コンストラクタでContextを取得して保持
+        // Retrieve and hold Context in constructor
     }
 
     void connect() {
@@ -439,23 +439,23 @@ Examples in `examples/platform/m5stack/` must follow this pattern:
 using namespace omusubi;
 using namespace omusubi::literals;
 
-// グローバル変数：setup()で一度だけ取得し、loop()で再利用
+// Global variables: retrieve once in setup(), reuse in loop()
 SystemContext& ctx = get_system_context();
 SerialContext* serial = nullptr;
 
 void setup() {
-    // システムの初期化
+    // Initialize system
     ctx.begin();
 
-    // デバイスの取得（一度だけ）
-    // 新しい設計: メソッドチェーン経由でアクセス
+    // Retrieve device (once only)
+    // New design: access via method chain
     serial = ctx.get_connectable_context()->get_serial0_context();
 
     // [Setup logic with comments]
 }
 
 void loop() {
-    // システムの更新
+    // Update system
     ctx.update();
 
     // [Loop logic with comments]
@@ -517,3 +517,38 @@ Planned:
 - Code comments: Japanese preferred
 - Variable names: English
 - Documentation: Japanese in README, mixed in code comments
+
+# Embedded Development Design Principles
+
+## Addressing Static Writable Area Constraints
+
+In embedded systems, it is often impossible to link static writable areas into executables.
+(Examples: BREW, Android Application Context, etc.)
+
+In environments with such constraints, designs that depend on static or global variables are not viable.
+
+### Solution: Context Pattern Design
+
+**Design Principles**
+- Access data through interfaces
+- Divide interfaces by category and expose only necessary functionality
+- Obtain required interfaces from a parent instance (Context)
+- Hide interface implementations from callers
+
+**Design Benefits**
+- Interfaces themselves have code efficiency nearly equivalent to direct access in executables
+- Forward declarations minimize impact on unrelated code
+- Implementation is independent of data placement (static area, dynamic area, external memory, etc.)
+- Interfaces can be nested to build hierarchical structures as needed
+- Interfaces hide whether data is a single block or has overlapping parts
+
+**Important Notes**
+- Singleton is an implementation choice for the implementation side
+- The caller should not expect the same instance to always be returned
+- The implementation side decides to adopt it for benefits like reduced creation costs
+
+**Reference Designs**
+- Android Application Context
+- Design Pattern: Abstract Factory Pattern
+
+This design pattern is a guideline for balancing flexibility and efficiency in memory-constrained embedded environments.
