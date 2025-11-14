@@ -16,6 +16,12 @@ public:
 
     /** @brief デバイスに接続 */
     virtual bool connect() = 0;
+
+    /** @brief デバイスから切断 */
+    virtual void disconnect() = 0;
+
+    /** @brief 接続状態を確認 */
+    virtual bool is_connected() const = 0;
 };
 
-}  // namespace omusubi
+} // namespace omusubi

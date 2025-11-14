@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace omusubi {
 
 // 前方宣言
@@ -22,7 +24,7 @@ public:
     virtual SerialContext* get_serial_context(uint8_t port) const = 0;
 
     /** @brief シリアルポートコンテキストを取得（コンパイル時） */
-    template<uint8_t Port>
+    template <uint8_t Port>
     SerialContext* get_serial_context() const {
         static_assert(Port <= 2, "Serial port must be 0, 1, or 2");
         return get_serial_context(Port);
@@ -35,4 +37,4 @@ public:
     virtual BluetoothContext* get_bluetooth_context() const = 0;
 };
 
-}  // namespace omusubi
+} // namespace omusubi

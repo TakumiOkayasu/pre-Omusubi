@@ -1,23 +1,38 @@
 #pragma once
 
-#include "omusubi/core/fixed_buffer.hpp"
+#include "omusubi/core/span.hpp"
+
+#include <cstddef>
+#include <cstdint>
 
 namespace omusubi {
 
 /**
- * @brief データ読み取りインターフェース
+ * @brief バイト列読み取りインターフェース
  */
-class Readable {
+class ByteReadable {
 public:
-    Readable() = default;
-    virtual ~Readable() = default;
-    Readable(const Readable&) = delete;
-    Readable& operator=(const Readable&) = delete;
-    Readable(Readable&&) = delete;
-    Readable& operator=(Readable&&) = delete;
+    ByteReadable() = default;
+    virtual ~ByteReadable() = default;
+    ByteReadable(const ByteReadable&) = delete;
+    ByteReadable& operator=(const ByteReadable&) = delete;
+    ByteReadable(ByteReadable&&) = delete;
+    ByteReadable& operator=(ByteReadable&&) = delete;
 
-    /** @brief データを読み取る */
-    virtual FixedBuffer<256> read() = 0;
+    /** @brief バイト列を読み取る */
+    virtual size_t read(span<uint8_t> buffer) = 0;
+
+    /** @brief 利用可能なバイト数を取得 */
+    virtual size_t available() const = 0;
 };
 
-}  // namespace omusubi
+/**
+ * @brief テキスト読み取りインターフェース
+ */
+class TextReadable : public ByteReadable {
+public:
+    /** @brief 行単位でデータを読み取る */
+    virtual size_t read_line(span<char> buffer) = 0;
+};
+
+} // namespace omusubi

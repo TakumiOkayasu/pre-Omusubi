@@ -2,6 +2,8 @@
 
 #include "omusubi/core/fixed_string.hpp"
 
+#include <cstdint>
+
 namespace omusubi {
 
 /**
@@ -32,4 +34,4 @@ public:
     virtual uint32_t get_free_memory() const = 0;
 };
 
-}  // namespace omusubi
+} // namespace omusubi

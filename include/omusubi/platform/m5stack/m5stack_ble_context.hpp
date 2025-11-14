@@ -18,11 +18,17 @@ public:
 
     // Connectable interface
     bool connect() override;
+    void disconnect() override;
+    bool is_connected() const override;
 
     // Scannable interface
-    uint8_t scan() override;
+    void start_scan() override;
+    void stop_scan() override;
+    uint8_t get_found_count() const override;
+    FixedString<64> get_found_name(uint8_t index) const override;
+    int32_t get_found_signal_strength(uint8_t index) const override;
 };
 
-}  // namespace m5stack
-}  // namespace platform
-}  // namespace omusubi
+} // namespace m5stack
+} // namespace platform
+} // namespace omusubi

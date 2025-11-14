@@ -8,7 +8,7 @@ namespace omusubi {
 /**
  * @brief BLE Characteristic インターフェース
  */
-class BLECharacteristic : public Readable, public Writable {
+class BLECharacteristic : public ByteReadable, public ByteWritable {
 public:
     BLECharacteristic() = default;
     ~BLECharacteristic() override = default;
@@ -18,4 +18,4 @@ public:
     BLECharacteristic& operator=(BLECharacteristic&&) = delete;
 };
 
-}  // namespace omusubi
+} // namespace omusubi

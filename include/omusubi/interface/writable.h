@@ -1,23 +1,35 @@
 #pragma once
 
-#include "omusubi/core/string_view.h"
+#include "omusubi/core/span.hpp"
+
+#include <cstddef>
+#include <cstdint>
 
 namespace omusubi {
 
 /**
- * @brief データ書き込みインターフェース
+ * @brief バイト列書き込みインターフェース
  */
-class Writable {
+class ByteWritable {
 public:
-    Writable() = default;
-    virtual ~Writable() = default;
-    Writable(const Writable&) = delete;
-    Writable& operator=(const Writable&) = delete;
-    Writable(Writable&&) = delete;
-    Writable& operator=(Writable&&) = delete;
+    ByteWritable() = default;
+    virtual ~ByteWritable() = default;
+    ByteWritable(const ByteWritable&) = delete;
+    ByteWritable& operator=(const ByteWritable&) = delete;
+    ByteWritable(ByteWritable&&) = delete;
+    ByteWritable& operator=(ByteWritable&&) = delete;
 
-    /** @brief 文字列を出力 */
-    virtual void write(StringView text) = 0;
+    /** @brief バイト列を書き込む */
+    virtual size_t write(span<const uint8_t> data) = 0;
 };
 
-}  // namespace omusubi
+/**
+ * @brief テキスト書き込みインターフェース
+ */
+class TextWritable : public ByteWritable {
+public:
+    /** @brief テキストを書き込む */
+    virtual size_t write_text(span<const char> text) = 0;
+};
+
+} // namespace omusubi
