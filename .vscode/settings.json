@@ -1,0 +1,29 @@
+{
+  // 保存時に自動フォーマット
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": false,
+  // C/C++のデフォルトフォーマッター（clangd）
+  "[c]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+    "editor.formatOnSave": true
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+    "editor.formatOnSave": true
+  },
+  // clangdの設定
+  "clangd.arguments": [
+    "--clang-tidy",
+    "--header-insertion=never",
+    "--completion-style=detailed",
+    "--fallback-style=file"
+  ],
+  // ファイル保存時のその他の処理
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": false,
+  // C++設定
+  "C_Cpp.formatting": "clangFormat",
+  "C_Cpp.clang_format_style": "file"
+}

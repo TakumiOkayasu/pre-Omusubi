@@ -9,13 +9,28 @@ BasedOnStyle: LLVM
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
-ColumnLimit: 100
+ColumnLimit: 180
 
 # 中括弧の配置
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: false
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterStruct: false
+  AfterUnion: false
+  BeforeCatch: false
+  BeforeElse: false
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
+RemoveBracesLLVM: false  # 中括弧の省略を禁止
 
 # ポインタと参照の配置
 PointerAlignment: Left
@@ -56,8 +71,18 @@ BinPackArguments: false
 BinPackParameters: false
 
 # 空行
-MaxEmptyLinesToKeep: 1
-KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 2  # 最大2行の空行を保持
+KeepEmptyLinesAtTheStartOfBlocks: false  # ブロック開始直後の空行は削除
+SeparateDefinitionBlocks: Always  # 定義ブロック間に空行
+# NOTE: if/for/while文の開き中括弧の前の行には空行を入れること（手動）
+# NOTE: 閉じ中括弧の後ろが閉じ中括弧でなければ空行を入れること（手動）
+# NOTE: return文の前に空行を入れること。ただしifブロックなどの中では無視（手動）
+
+# テンプレート
+AlwaysBreakTemplateDeclarations: Yes  # template<>の後ろは改行
+
+# 空行
+KeepEmptyLinesAtEOF: false
 
 # その他
 AlignConsecutiveAssignments: None
@@ -69,3 +94,8 @@ IndentCaseLabels: true
 SpaceAfterCStyleCast: false
 SpaceBeforeParens: ControlStatements
 SpacesInAngles: false
+Cpp11BracedListStyle: true  # 初期化子の{}の前にスペース1つ
+SpaceBeforeCpp11BracedList: true  # 初期化子の{}の前にスペース
+
+# ファイル末尾
+InsertNewlineAtEOF: true  # EOFでは必ず改行
