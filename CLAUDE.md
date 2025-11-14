@@ -830,6 +830,13 @@ public:
 
 ## Coding Conventions
 
+- **C++ Standard:** ALL code MUST conform to C++14. Actively use C++14 features when generating code:
+  - Extended `constexpr` (functions with multiple statements, loops, conditionals)
+  - Generic lambdas with `auto` parameters
+  - Return type deduction with `auto`
+  - Binary literals (`0b1010`) and digit separators (`1'000'000`)
+  - `std::make_unique` for rare heap allocations (though heap allocation is generally prohibited)
+  - Variable templates
 - **Naming:**
   - Files: `snake_case.h`, `snake_case.hpp`, `snake_case.cpp`
   - Functions/variables: `snake_case`
@@ -839,6 +846,7 @@ public:
   - Enum class values: `UPPER_CASE_WITH_UNDERSCORES` (treated as immutable constants)
   - Component layer: Domain-standard terminology (e.g., `BLECharacteristic`, `HTTPRequest`), NOT `*Context`
 - **Macros:** Prohibited - Use `constexpr` functions and variables instead
+- **constexpr Usage:** Prefer `constexpr` wherever possible to move runtime computations to compile-time. This reduces runtime overhead and binary size. Examples: `constexpr` constructors, `constexpr` member functions in `span<T>`, `FixedString<N>`, etc.
 - **String literals:** Use `_sv` suffix (requires `using namespace omusubi::literals`)
 - **Header guards:** Use `#pragma once`
 - **Memory:** No heap allocation - stack or placement new with static buffers only
