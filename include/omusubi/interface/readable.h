@@ -29,8 +29,15 @@ public:
 /**
  * @brief テキスト読み取りインターフェース
  */
-class TextReadable : public ByteReadable {
+class TextReadable {
 public:
+    TextReadable() = default;
+    virtual ~TextReadable() = default;
+    TextReadable(const TextReadable&) = delete;
+    TextReadable& operator=(const TextReadable&) = delete;
+    TextReadable(TextReadable&&) = delete;
+    TextReadable& operator=(TextReadable&&) = delete;
+
     /** @brief 行単位でデータを読み取る */
     virtual size_t read_line(span<char> buffer) = 0;
 };

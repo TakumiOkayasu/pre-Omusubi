@@ -6,8 +6,6 @@ namespace omusubi {
 
 // 前方宣言
 class ConnectableContext;
-class ReadableContext;
-class WritableContext;
 class ScannableContext;
 class SensorContext;
 class InputContext;
@@ -49,12 +47,6 @@ public:
 
     /** @brief 接続可能なデバイスのコンテキスト */
     virtual ConnectableContext* get_connectable_context() const = 0;
-
-    /** @brief 読み取り可能なデバイスのコンテキスト */
-    virtual ReadableContext* get_readable_context() const = 0;
-
-    /** @brief 書き込み可能なデバイスのコンテキスト */
-    virtual WritableContext* get_writable_context() const = 0;
 
     /** @brief スキャン可能なデバイスのコンテキスト */
     virtual ScannableContext* get_scannable_context() const = 0;

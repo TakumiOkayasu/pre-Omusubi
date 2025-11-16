@@ -389,12 +389,10 @@ The Context layer is not just for grouping - it functions as a **Dependency Inje
 
 **Contexts by Category:**
 
-- `ConnectableContext` - All connection-capable devices
+- `ConnectableContext` - All connection-capable devices (primary device access)
   - `SerialContext`, `BluetoothContext`, `WiFiContext`, `BLEContext`
-- `ReadableContext` - All readable devices
-  - `SerialContext`, `BluetoothContext`
-- `WritableContext` - All writable devices
-  - `SerialContext`, `BluetoothContext`, `DisplayContext`
+  - **Note:** SerialContext and BluetoothContext implement ByteReadable, TextReadable, and ByteWritable interfaces
+  - Devices are accessed via ConnectableContext only (no separate ReadableContext/WritableContext)
 - `ScannableContext` - All scannable devices
   - `WiFiContext`, `BluetoothContext`, `BLEContext`
 - `SensorContext` - All sensor devices
@@ -789,8 +787,6 @@ public:
 
     // Category context access (all must have const)
     virtual ConnectableContext* get_connectable_context() const = 0;
-    virtual ReadableContext* get_readable_context() const = 0;
-    virtual WritableContext* get_writable_context() const = 0;
     virtual ScannableContext* get_scannable_context() const = 0;
     virtual SensorContext* get_sensor_context() const = 0;
     virtual InputContext* get_input_context() const = 0;

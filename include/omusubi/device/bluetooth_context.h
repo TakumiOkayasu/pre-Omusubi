@@ -10,7 +10,7 @@ namespace omusubi {
 /**
  * @brief Bluetooth Classic通信デバイス
  */
-class BluetoothContext : public TextReadable, public TextWritable, public Connectable, public Scannable {
+class BluetoothContext : public ByteReadable, public TextReadable, public TextWritable, public Connectable, public Scannable {
 public:
     BluetoothContext() = default;
     ~BluetoothContext() override = default;

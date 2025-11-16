@@ -9,7 +9,7 @@ namespace omusubi {
 /**
  * @brief シリアル通信デバイス
  */
-class SerialContext : public TextReadable, public TextWritable, public Connectable {
+class SerialContext : public ByteReadable, public TextReadable, public TextWritable, public Connectable {
 public:
     SerialContext() = default;
     ~SerialContext() override = default;

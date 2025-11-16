@@ -525,32 +525,6 @@ SerialContext* serial = conn->get_serial_context<0>();
 WiFiContext* wifi = conn->get_wifi_context();
 ```
 
-### ReadableContext
-
-読み取り可能デバイスのコンテキスト。
-
-```cpp
-class ReadableContext {
-public:
-    virtual SerialContext* get_serial_context(uint8_t port) const = 0;
-    virtual uint8_t get_serial_count() const = 0;
-    virtual BluetoothContext* get_bluetooth_context() const = 0;
-};
-```
-
-### WritableContext
-
-書き込み可能デバイスのコンテキスト。
-
-```cpp
-class WritableContext {
-public:
-    virtual SerialContext* get_serial_context(uint8_t port) const = 0;
-    virtual uint8_t get_serial_count() const = 0;
-    virtual BluetoothContext* get_bluetooth_context() const = 0;
-};
-```
-
 ### ScannableContext
 
 スキャン可能デバイスのコンテキスト。
@@ -666,8 +640,6 @@ public:
 
     // カテゴリ別コンテキストアクセス
     virtual ConnectableContext* get_connectable_context() const = 0;
-    virtual ReadableContext* get_readable_context() const = 0;
-    virtual WritableContext* get_writable_context() const = 0;
     virtual ScannableContext* get_scannable_context() const = 0;
     virtual SensorContext* get_sensor_context() const = 0;
     virtual InputContext* get_input_context() const = 0;
@@ -884,5 +856,5 @@ constexpr size_t len = msg.size();
 
 ---
 
-**Version:** 1.2.0
+**Version:** 2.0.0
 **Last Updated:** 2025-11-16

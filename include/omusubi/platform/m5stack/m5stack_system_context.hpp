@@ -6,11 +6,9 @@
 #include "m5stack_input_context.hpp"
 #include "m5stack_output_context.hpp"
 #include "m5stack_power_context.hpp"
-#include "m5stack_readable_context.hpp"
 #include "m5stack_scannable_context.hpp"
 #include "m5stack_sensor_context.hpp"
 #include "m5stack_system_info_context.hpp"
-#include "m5stack_writable_context.hpp"
 
 namespace omusubi {
 namespace platform {
@@ -19,18 +17,14 @@ namespace m5stack {
 /**
  * @brief M5Stack用システムコンテキスト
  *
- * Pattern A: デバイスの所有構造
+ * デバイスの所有構造:
  * - ConnectableContextがSerial, Bluetooth, WiFi, BLEの実体を所有
- * - 他のContextはデバイスへの参照を保持
+ * - 各デバイスへはConnectableContext経由でアクセス
  */
 class M5StackSystemContext : public SystemContext {
 private:
-    // デバイスを所有するContext（先に初期化）
+    // デバイスを所有するContext
     mutable M5StackConnectableContext connectable_;
-
-    // デバイスへの参照を持つContext（後に初期化）
-    mutable M5StackReadableContext readable_;
-    mutable M5StackWritableContext writable_;
     mutable M5StackScannableContext scannable_;
 
     // 独立したContext
@@ -63,10 +57,6 @@ public:
     // ========================================
 
     ConnectableContext* get_connectable_context() const override { return &connectable_; }
-
-    ReadableContext* get_readable_context() const override { return &readable_; }
-
-    WritableContext* get_writable_context() const override { return &writable_; }
 
     ScannableContext* get_scannable_context() const override { return &scannable_; }
 

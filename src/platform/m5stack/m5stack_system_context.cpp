@@ -12,9 +12,8 @@ namespace m5stack {
 // ========================================
 
 M5StackSystemContext::M5StackSystemContext()
-    : connectable_(), readable_(connectable_.get_serial_context(0), connectable_.get_serial_context(1), connectable_.get_serial_context(2), connectable_.get_bluetooth_context()),
-      writable_(connectable_.get_serial_context(0), connectable_.get_serial_context(1), connectable_.get_serial_context(2), connectable_.get_bluetooth_context()),
-      scannable_(connectable_.get_bluetooth_context(), connectable_.get_wifi_context(), connectable_.get_ble_context()), sensor_(), input_(), output_(), system_info_(), power_() {}
+    : connectable_(), scannable_(connectable_.get_bluetooth_context(), connectable_.get_wifi_context(), connectable_.get_ble_context()), sensor_(), input_(), output_(),
+      system_info_(), power_() {}
 
 // ========================================
 // システム制御

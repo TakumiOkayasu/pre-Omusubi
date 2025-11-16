@@ -108,9 +108,8 @@ Omusubiは5つのレイヤーで構成されています。
 **責務:** デバイスのグループ化とDIコンテナ
 
 **カテゴリ別Context:**
-- `ConnectableContext` - すべての接続可能デバイス
-- `ReadableContext` - すべての読み取り可能デバイス
-- `WritableContext` - すべての書き込み可能デバイス
+- `ConnectableContext` - すべての接続可能デバイス（主要なデバイスアクセスポイント）
+  - SerialContext、BluetoothContextはByteReadable/TextReadable/ByteWritableを実装
 - `ScannableContext` - すべてのスキャン可能デバイス
 - `SensorContext` - すべてのセンサーデバイス
 - `InputContext` - すべての入力デバイス
@@ -365,7 +364,8 @@ void loop() {
 class MyDeviceSystemContext : public SystemContext {
 private:
     mutable MyDeviceConnectableContext connectable_;
-    mutable MyDeviceReadableContext readable_;
+    mutable MyDeviceScannableContext scannable_;
+    mutable MyDeviceSensorContext sensor_;
     // ... 他のContext
 
 public:
@@ -379,6 +379,9 @@ public:
 
     ConnectableContext* get_connectable_context() const override {
         return &connectable_;
+    }
+    ScannableContext* get_scannable_context() const override {
+        return &scannable_;
     }
     // ... 他のgetter
 };
@@ -671,5 +674,5 @@ SerialContext* serial = ctx.get_serial_context<0>();
 
 ---
 
-**Version:** 1.0.1
+**Version:** 2.0.0
 **Last Updated:** 2025-11-16
