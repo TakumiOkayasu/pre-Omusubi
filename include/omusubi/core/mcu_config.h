@@ -20,12 +20,12 @@ namespace config {
 /**
  * @brief 文字列の最大長（デフォルト値）
  */
-inline constexpr std::size_t MAX_STRING_LENGTH = 256;
+constexpr std::size_t MAX_STRING_LENGTH = 256;
 
 /**
  * @brief バッファの最大サイズ（デフォルト値）
  */
-inline constexpr std::size_t MAX_BUFFER_SIZE = 1024;
+constexpr std::size_t MAX_BUFFER_SIZE = 1024;
 
 // ========================================
 // デバッグビルドの判定

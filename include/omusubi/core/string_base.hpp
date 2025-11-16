@@ -46,7 +46,8 @@ public:
 
     template <typename Other>
     constexpr bool equals(const String<Other>& other) const noexcept {
-        return equals(other.derived().data(), other.derived().byte_length());
+        const auto& other_derived = static_cast<const Other&>(other);
+        return equals(other_derived.data(), other_derived.byte_length());
     }
 };
 
