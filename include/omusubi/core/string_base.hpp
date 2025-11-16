@@ -6,9 +6,9 @@ namespace omusubi {
 
 namespace utf8 {
 
-inline uint8_t get_char_byte_length(uint8_t first_byte) noexcept;
-inline uint32_t count_chars(const char* str, uint32_t byte_length) noexcept;
-inline uint32_t get_char_position(const char* str, uint32_t byte_length, uint32_t char_index) noexcept;
+constexpr uint8_t get_char_byte_length(uint8_t first_byte) noexcept;
+constexpr uint32_t count_chars(const char* str, uint32_t byte_length) noexcept;
+constexpr uint32_t get_char_position(const char* str, uint32_t byte_length, uint32_t char_index) noexcept;
 
 } // namespace utf8
 
@@ -24,9 +24,9 @@ protected:
     constexpr const Derived& derived() const noexcept { return static_cast<const Derived&>(*this); }
 
 public:
-    uint32_t char_length() const noexcept { return utf8::count_chars(derived().data(), derived().byte_length()); }
+    constexpr uint32_t char_length() const noexcept { return utf8::count_chars(derived().data(), derived().byte_length()); }
 
-    uint32_t get_char_position(uint32_t char_index) const noexcept { return utf8::get_char_position(derived().data(), derived().byte_length(), char_index); }
+    constexpr uint32_t get_char_position(uint32_t char_index) const noexcept { return utf8::get_char_position(derived().data(), derived().byte_length(), char_index); }
 
     constexpr bool is_empty() const noexcept { return derived().byte_length() == 0; }
 

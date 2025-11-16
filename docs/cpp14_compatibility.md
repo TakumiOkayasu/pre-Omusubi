@@ -73,16 +73,90 @@ CXXFLAGS = -std=c++14 -Wall -Wextra -Iinclude
 
 以下のC++14機能は積極的に使用してください：
 
-### 1. 拡張された `constexpr`
+### 1. 拡張された `constexpr` (重要: 可能な限り使用すること)
+
+**CRITICAL RULE: 可能な限りすべての関数に`constexpr`を付けること**
+
+C++14では複数の文、ループ、条件分岐、変数の変更が可能になり、実用的な`constexpr`関数が書けます。
+
+**基本方針:**
+- すべてのコンストラクタ、メソッド、関数に`constexpr`を付ける
+- I/Oやハードウェアアクセスなど、副作用がある関数のみ除外
+- `constexpr`を付けない場合は、理由をコメントで明記
+
+**例（FixedString）:**
 ```cpp
-// C++14では複数の文、ループ、条件分岐が可能
-constexpr int factorial(int n) {
-    int result = 1;
-    for (int i = 2; i <= n; ++i) {
-        result *= i;
+// ✅ すべてのメソッドにconstexpr
+template <uint32_t Capacity>
+class FixedString {
+public:
+    constexpr FixedString() noexcept : byte_length_(0) { buffer_[0] = '\0'; }
+
+    constexpr explicit FixedString(const char* str) noexcept : byte_length_(0) {
+        buffer_[0] = '\0';
+        if (str != nullptr) {
+            append(str);
+        }
     }
-    return result;
+
+    constexpr uint32_t byte_length() const noexcept { return byte_length_; }
+
+    constexpr bool append(StringView view) noexcept {
+        if (byte_length_ + view.byte_length() > Capacity) {
+            return false;
+        }
+        for (uint32_t i = 0; i < view.byte_length(); ++i) {
+            buffer_[byte_length_++] = view[i];
+        }
+        buffer_[byte_length_] = '\0';
+        return true;
+    }
+};
+
+// ✅ UTF-8処理もconstexpr
+namespace utf8 {
+constexpr uint8_t get_char_byte_length(uint8_t first_byte) noexcept {
+    if ((first_byte & 0x80) == 0x00) return 1;
+    if ((first_byte & 0xE0) == 0xC0) return 2;
+    if ((first_byte & 0xF0) == 0xE0) return 3;
+    if ((first_byte & 0xF8) == 0xF0) return 4;
+    return 1;
 }
+
+constexpr uint32_t count_chars(const char* str, uint32_t byte_length) noexcept {
+    uint32_t char_count = 0;
+    uint32_t i = 0;
+    while (i < byte_length) {
+        const uint8_t char_len = get_char_byte_length(static_cast<uint8_t>(str[i]));
+        i += char_len;
+        ++char_count;
+    }
+    return char_count;
+}
+}
+
+// ✅ ヘルパー関数もconstexpr
+template <uint32_t N>
+constexpr FixedString<N - 1> fixed_string(const char (&str)[N]) noexcept {
+    return FixedString<N - 1>(str);
+}
+```
+
+**constexprの利点:**
+- コンパイル時計算により実行時オーバーヘッドがゼロ
+- バイナリサイズの削減
+- `static_assert`やテンプレートパラメータで使用可能
+- 型安全性の向上
+
+**コンパイル時評価の例:**
+```cpp
+// コンパイル時に文字列を構築
+constexpr auto str = fixed_string("Hello");
+static_assert(str.byte_length() == 5, "compile-time check");
+
+// UTF-8処理もコンパイル時
+constexpr auto utf8_str = fixed_string("こんにちは");
+static_assert(utf8_str.char_length() == 5, "UTF-8 char count");
 ```
 
 ### 2. ジェネリックラムダ
@@ -228,5 +302,5 @@ C++14の厳格な準拠により、Omusubiフレームワークは幅広い組�
 
 ---
 
-**Version:** 1.0.1
+**Version:** 1.1.0
 **Last Updated:** 2025-11-16

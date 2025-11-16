@@ -10,7 +10,7 @@ namespace omusubi {
 
 namespace utf8 {
 
-inline uint8_t get_char_byte_length(uint8_t first_byte) noexcept {
+constexpr uint8_t get_char_byte_length(uint8_t first_byte) noexcept {
     if ((first_byte & 0x80) == 0x00) {
         return 1;
     }
@@ -26,7 +26,7 @@ inline uint8_t get_char_byte_length(uint8_t first_byte) noexcept {
     return 1;
 }
 
-inline uint32_t count_chars(const char* str, uint32_t byte_length) noexcept {
+constexpr uint32_t count_chars(const char* str, uint32_t byte_length) noexcept {
     uint32_t char_count = 0;
     uint32_t i = 0;
 
@@ -39,7 +39,7 @@ inline uint32_t count_chars(const char* str, uint32_t byte_length) noexcept {
     return char_count;
 }
 
-inline uint32_t get_char_position(const char* str, uint32_t byte_length, uint32_t char_index) noexcept {
+constexpr uint32_t get_char_position(const char* str, uint32_t byte_length, uint32_t char_index) noexcept {
     uint32_t current_char = 0;
     uint32_t i = 0;
 
@@ -75,7 +75,7 @@ public:
     /**
      * @brief C文字列から構築（実行時長さ計算）
      */
-    static StringView from_c_string(const char* str) {
+    static constexpr StringView from_c_string(const char* str) noexcept {
         if (str == nullptr) {
             return StringView {};
         }
@@ -128,7 +128,7 @@ public:
     /**
      * @brief 指定された接頭辞で始まるか判定
      */
-    bool starts_with(StringView prefix) const noexcept {
+    constexpr bool starts_with(StringView prefix) const noexcept {
         if (prefix.byte_length_ > byte_length_) {
             return false;
         }
@@ -139,7 +139,7 @@ public:
     /**
      * @brief 指定された接尾辞で終わるか判定
      */
-    bool ends_with(StringView suffix) const noexcept {
+    constexpr bool ends_with(StringView suffix) const noexcept {
         if (suffix.byte_length_ > byte_length_) {
             return false;
         }
@@ -151,7 +151,7 @@ public:
     /**
      * @brief 部分文字列を含むか判定
      */
-    bool contains(StringView needle) const noexcept {
+    constexpr bool contains(StringView needle) const noexcept {
         if (needle.byte_length_ > byte_length_) {
             return false;
         }

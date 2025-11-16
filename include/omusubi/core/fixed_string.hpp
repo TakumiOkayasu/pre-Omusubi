@@ -23,12 +23,12 @@ public:
     /**
      * @brief デフォルトコンストラクタ
      */
-    FixedString() noexcept : byte_length_(0) { buffer_[0] = '\0'; }
+    constexpr FixedString() noexcept : byte_length_(0) { buffer_[0] = '\0'; }
 
     /**
      * @brief C文字列から構築
      */
-    explicit FixedString(const char* str) noexcept : byte_length_(0) {
+    constexpr explicit FixedString(const char* str) noexcept : byte_length_(0) {
         buffer_[0] = '\0';
         if (str != nullptr) {
             append(str);
@@ -38,7 +38,7 @@ public:
     /**
      * @brief StringViewから構築
      */
-    explicit FixedString(StringView view) noexcept : byte_length_(0) {
+    constexpr explicit FixedString(StringView view) noexcept : byte_length_(0) {
         buffer_[0] = '\0';
         append(view);
     }
@@ -51,27 +51,27 @@ public:
     /**
      * @brief バイト長を取得
      */
-    uint32_t byte_length() const noexcept { return byte_length_; }
+    constexpr uint32_t byte_length() const noexcept { return byte_length_; }
 
     /**
      * @brief データへのポインタを取得
      */
-    const char* data() const noexcept { return buffer_; }
+    constexpr const char* data() const noexcept { return buffer_; }
 
     /**
      * @brief C文字列として取得（null終端保証）
      */
-    const char* c_str() const noexcept { return buffer_; }
+    constexpr const char* c_str() const noexcept { return buffer_; }
 
     /**
      * @brief StringViewに変換
      */
-    StringView view() const noexcept { return StringView(buffer_, byte_length_); }
+    constexpr StringView view() const noexcept { return StringView(buffer_, byte_length_); }
 
     /**
      * @brief 文字列を追加
      */
-    bool append(StringView view) noexcept {
+    constexpr bool append(StringView view) noexcept {
         if (byte_length_ + view.byte_length() > Capacity) {
             return false;
         }
@@ -88,7 +88,7 @@ public:
     /**
      * @brief C文字列を追加
      */
-    bool append(const char* str) noexcept {
+    constexpr bool append(const char* str) noexcept {
         if (str == nullptr) {
             return false;
         }
@@ -98,7 +98,7 @@ public:
     /**
      * @brief 1文字追加
      */
-    bool append(char c) noexcept {
+    constexpr bool append(char c) noexcept {
         if (byte_length_ >= Capacity) {
             return false;
         }
@@ -112,7 +112,7 @@ public:
     /**
      * @brief クリア
      */
-    void clear() noexcept {
+    constexpr void clear() noexcept {
         byte_length_ = 0;
         buffer_[0] = '\0';
     }
@@ -121,7 +121,7 @@ public:
 
     bool operator!=(StringView other) const noexcept { return !String<FixedString<Capacity>>::equals(other); }
 
-    StringView get_char(uint32_t char_index) const noexcept {
+    constexpr StringView get_char(uint32_t char_index) const noexcept {
         uint32_t byte_pos = this->get_char_position(char_index);
 
         if (byte_pos >= byte_length_) {
@@ -135,27 +135,27 @@ public:
     /**
      * @brief イテレータ（開始）
      */
-    const char* begin() const noexcept { return buffer_; }
+    constexpr const char* begin() const noexcept { return buffer_; }
 
     /**
      * @brief イテレータ（終了）
      */
-    const char* end() const noexcept { return buffer_ + byte_length_; }
+    constexpr const char* end() const noexcept { return buffer_ + byte_length_; }
 
     /**
      * @brief spanとして取得（書き込み可能）
      */
-    span<char> as_span() noexcept { return span<char>(buffer_, byte_length_); }
+    constexpr span<char> as_span() noexcept { return span<char>(buffer_, byte_length_); }
 
     /**
      * @brief spanとして取得（読み取り専用）
      */
-    span<const char> as_span() const noexcept { return span<const char>(buffer_, byte_length_); }
+    constexpr span<const char> as_span() const noexcept { return span<const char>(buffer_, byte_length_); }
 
     /**
      * @brief spanから構築
      */
-    void from_span(span<const char> s) noexcept {
+    constexpr void from_span(span<const char> s) noexcept {
         byte_length_ = (s.size() < Capacity) ? static_cast<uint32_t>(s.size()) : Capacity;
         for (uint32_t i = 0; i < byte_length_; ++i) {
             buffer_[i] = s[i];
@@ -167,5 +167,13 @@ private:
     char buffer_[Capacity + 1]; // +1 for null terminator
     uint32_t byte_length_;
 };
+
+/**
+ * @brief 文字列リテラルから固定長文字列を構築
+ */
+template <uint32_t N>
+constexpr FixedString<N - 1> fixed_string(const char (&str)[N]) noexcept {
+    return FixedString<N - 1>(str);
+}
 
 } // namespace omusubi

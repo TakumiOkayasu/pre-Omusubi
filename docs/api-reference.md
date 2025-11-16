@@ -103,9 +103,24 @@ public:
 };
 ```
 
+**ヘルパー関数:**
+
+```cpp
+// 文字列リテラルから固定長文字列を構築（constexpr対応）
+template <uint32_t N>
+constexpr FixedString<N - 1> fixed_string(const char (&str)[N]) noexcept;
+```
+
 **使用例:**
 
 ```cpp
+// ヘルパー関数で構築（サイズ自動推論）
+auto str1 = fixed_string("Hello");  // FixedString<5>
+
+// constexpr対応（コンパイル時評価）
+constexpr auto str2 = fixed_string("World");
+static_assert(str2.byte_length() == 5, "compile-time check");
+
 // 容量256バイトの文字列
 FixedString<256> str;
 str.append("Hello"_sv);
@@ -869,5 +884,5 @@ constexpr size_t len = msg.size();
 
 ---
 
-**Version:** 1.0.1
+**Version:** 1.2.0
 **Last Updated:** 2025-11-16
