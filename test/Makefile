@@ -4,6 +4,9 @@ CXX = clang++
 CXXFLAGS = -std=c++14 -Wall -Wextra -pedantic -I../include
 LDFLAGS =
 
+# ディレクトリ
+OBJ_DIR = obj
+
 # テストファイル
 TEST_SOURCES = test_span.cpp \
                test_string_view.cpp \
@@ -12,8 +15,8 @@ TEST_SOURCES = test_span.cpp \
                test_vector3.cpp \
                test_all.cpp
 
-# オブジェクトファイル
-TEST_OBJECTS = $(TEST_SOURCES:.cpp=.o)
+# オブジェクトファイル（obj/ディレクトリ内）
+TEST_OBJECTS = $(addprefix $(OBJ_DIR)/, $(TEST_SOURCES:.cpp=.o))
 
 # 実行ファイル
 TARGET = test_runner
@@ -25,11 +28,14 @@ all: $(TARGET)
 $(TARGET): $(TEST_OBJECTS)
 	$(CXX) $(LDFLAGS) -o $@ $^
 
-%.o: %.cpp
+$(OBJ_DIR)/%.o: %.cpp | $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+
 clean:
-	rm -f $(TEST_OBJECTS) $(TARGET)
+	rm -rf $(OBJ_DIR) $(TARGET)
 
 run: $(TARGET)
 	./$(TARGET)
