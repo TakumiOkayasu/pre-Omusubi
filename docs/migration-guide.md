@@ -270,3 +270,8 @@ namespace omusubi {
 ## フィードバック
 
 このマイグレーションガイドの改善提案は、[GitHub Issues](https://github.com/your-org/omusubi/issues)または[Discussions](https://github.com/your-org/omusubi/discussions)でお待ちしています。
+
+---
+
+**Version:** 1.0.0
+**Last Updated:** 2025-11-16

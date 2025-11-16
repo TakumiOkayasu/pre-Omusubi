@@ -1,146 +1,8 @@
-# 型システムの統一 - サマリー
+# 型システムの統一
 
 ## 概要
 
 プロジェクト全体で`size_t`と`uint32_t`の混在を調査し、不要なラッパー関数を削除して型システムを統一しました。
-
-## 実施した修正
-
-### 1. `static_string.hpp` - 型システムの完全統一 ✅
-
-#### 削除: 不要な`make_static_string()`ラッパー関数
-
-**削除前:**
-```cpp
-// static_string() - size_tを使用
-template <size_t N>
-constexpr StaticString<N - 1> static_string(const char (&str)[N]) noexcept { ... }
-
-// make_static_string() - uint32_tを使用（ラッパー）
-template <uint32_t N>
-constexpr static_string<N> make_static_string(const char (&str)[N]) noexcept {
-    return static_string<N>(str);  // ← 単なるラッパー
-}
-```
-
-**削除後:**
-```cpp
-// static_string() - uint32_tに統一
-template <uint32_t N>
-constexpr StaticString<N - 1> static_string(const char (&str)[N]) noexcept { ... }
-```
-
-**使用方法:**
-```cpp
-// ✅ シンプルな関数名
-constexpr auto str = static_string("Hello");
-```
-
-#### 修正: `StaticString`クラスの型を`uint32_t`に統一
-
-**修正内容:**
-- テンプレートパラメータ: `template <size_t N>` → `template <uint32_t N>`
-- メンバー関数の戻り値: `size_t size()` → `uint32_t size()`
-- インデックス引数: `operator[](size_t index)` → `operator[](uint32_t index)`
-- ループ変数: すべて`uint32_t`に統一
-
-**影響範囲:**
-- `StaticString`クラス全体
-- `substring()`テンプレートパラメータ
-- `from_int()`メソッド
-- `count_digits()`ヘルパー関数
-- 演算子オーバーロード（`operator+`, `operator==`, `operator!=`）
-
----
-
-### 2. `span.hpp` - 不要なラッパー関数を削除 ✅
-
-#### 削除: `to_span()`と`to_string_view()`
-
-**削除前:**
-```cpp
-constexpr span<const char> to_span(StringView sv) noexcept {
-    return {sv.data(), sv.byte_length()};
-}
-
-constexpr StringView to_string_view(span<const char> s) noexcept {
-    return {s.data(), static_cast<uint32_t>(s.size())};  // ← 不要なキャスト隠蔽
-}
-```
-
-**削除理由:**
-1. 型の不一致を隠蔽しており、問題を見えにくくする
-2. ユーザーは直接コンストラクタを使うべき
-3. 冗長な抽象化層
-
-**代替方法:**
-```cpp
-// span → StringView（明示的なキャストで意図を明確に）
-StringView sv{s.data(), static_cast<uint32_t>(s.size())};
-
-// StringView → span（そのまま渡せる）
-span<const char> sp{sv.data(), sv.byte_length()};
-```
-
----
-
-### 3. `fixed_string.hpp` - ループ変数の統一 ✅
-
-#### 修正: `from_span()`メソッド
-
-**修正前:**
-```cpp
-void from_span(span<const char> s) noexcept {
-    byte_length_ = (s.size() < Capacity) ? s.size() : Capacity;
-    for (size_t i = 0; i < byte_length_; ++i) {  // ← size_t
-        buffer_[i] = s[i];
-    }
-    buffer_[byte_length_] = '\0';
-}
-```
-
-**修正後:**
-```cpp
-void from_span(span<const char> s) noexcept {
-    byte_length_ = (s.size() < Capacity) ? static_cast<uint32_t>(s.size()) : Capacity;
-    for (uint32_t i = 0; i < byte_length_; ++i) {  // ← uint32_t
-        buffer_[i] = s[i];
-    }
-    buffer_[byte_length_] = '\0';
-}
-```
-
-**変更点:**
-- `s.size()`の代入時に明示的キャスト
-- ループ変数を`uint32_t`に変更
-
----
-
-### 4. `fixed_buffer.hpp` - ループ変数の統一 ✅
-
-#### 修正: `from_span()`メソッド
-
-**修正前:**
-```cpp
-void from_span(span<const uint8_t> s) noexcept {
-    length_ = (s.size() < Capacity) ? s.size() : Capacity;
-    for (size_t i = 0; i < length_; ++i) {  // ← size_t
-        buffer_[i] = s[i];
-    }
-}
-```
-
-**修正後:**
-```cpp
-void from_span(span<const uint8_t> s) noexcept {
-    length_ = (s.size() < Capacity) ? static_cast<uint32_t>(s.size()) : Capacity;
-    for (uint32_t i = 0; i < length_; ++i) {  // ← uint32_t
-        buffer_[i] = s[i];
-    }
-}
-```
-
----
 
 ## なぜ`uint32_t`を使用するのか
 
@@ -216,16 +78,152 @@ FixedString<70000> str;  // オーバーフローして4464になる！
 3. **文字列リテラル演算子**
    - C++標準では`operator""_sv(const char*, size_t)`が必須
 
-## 型の使い分けルール（確定版）
+## 型の使い分けルール
 
 | 用途 | 使用する型 | 理由 |
 |------|-----------|------|
 | **容量・サイズの定数（テンプレートパラメータ）** | `uint32_t` | プラットフォーム間で一貫した32ビット固定サイズ |
 | **内部の長さ管理（メンバー変数）** | `uint32_t` | 容量と型を統一、バイナリ互換性の確保 |
 | **`FixedString`, `FixedBuffer`, `StaticString`の内部処理** | `uint32_t` | 組み込みシステムでの予測可能な動作 |
-| **I/O操作の戻り値（`read()`, `write()`, `available()`）** | `size_t` | C++標準ライブラリとの互換性（`std::istream::read()`等） |
+| **I/O操作の戻り値（`read()`, `write()`, `available()`）** | `size_t` | C++標準ライブラリとの互換性 |
 | **`span<T>`の操作（`size()`, `operator[]`）** | `size_t` | C++20 `std::span`互換性、標準コンテナとの連携 |
-| **文字列リテラル演算子（`operator""_sv`）** | `size_t` | C++標準要求（`operator""_sv(const char*, size_t)`） |
+| **文字列リテラル演算子（`operator""_sv`）** | `size_t` | C++標準要求 |
+
+## 実施した修正
+
+### 1. `static_string.hpp` - 型システムの完全統一
+
+#### 削除: 不要な`make_static_string()`ラッパー関数
+
+**削除前:**
+```cpp
+// static_string() - size_tを使用
+template <size_t N>
+constexpr StaticString<N - 1> static_string(const char (&str)[N]) noexcept { ... }
+
+// make_static_string() - uint32_tを使用（ラッパー）
+template <uint32_t N>
+constexpr static_string<N> make_static_string(const char (&str)[N]) noexcept {
+    return static_string<N>(str);  // ← 単なるラッパー
+}
+```
+
+**削除後:**
+```cpp
+// static_string() - uint32_tに統一
+template <uint32_t N>
+constexpr StaticString<N - 1> static_string(const char (&str)[N]) noexcept { ... }
+```
+
+**使用方法:**
+```cpp
+// ✅ シンプルな関数名
+auto str = static_string("Hello");
+```
+
+#### 修正: `StaticString`クラスの型を`uint32_t`に統一
+
+**修正内容:**
+- テンプレートパラメータ: `template <size_t N>` → `template <uint32_t N>`
+- メンバー関数の戻り値: `size_t size()` → `uint32_t size()`
+- インデックス引数: `operator[](size_t index)` → `operator[](uint32_t index)`
+- ループ変数: すべて`uint32_t`に統一
+
+**影響範囲:**
+- `StaticString`クラス全体
+- `substring()`テンプレートパラメータ
+- `from_int()`メソッド
+- `count_digits()`ヘルパー関数
+- 演算子オーバーロード（`operator+`, `operator==`, `operator!=`）
+
+---
+
+### 2. `span.hpp` - 不要なラッパー関数を削除
+
+#### 削除: `to_span()`と`to_string_view()`
+
+**削除前:**
+```cpp
+constexpr span<const char> to_span(StringView sv) noexcept {
+    return {sv.data(), sv.byte_length()};
+}
+
+constexpr StringView to_string_view(span<const char> s) noexcept {
+    return {s.data(), static_cast<uint32_t>(s.size())};  // ← 不要なキャスト隠蔽
+}
+```
+
+**削除理由:**
+1. 型の不一致を隠蔽しており、問題を見えにくくする
+2. ユーザーは直接コンストラクタを使うべき
+3. 冗長な抽象化層
+
+**代替方法:**
+```cpp
+// span → StringView（明示的なキャストで意図を明確に）
+StringView sv{s.data(), static_cast<uint32_t>(s.size())};
+
+// StringView → span（そのまま渡せる）
+span<const char> sp{sv.data(), sv.byte_length()};
+```
+
+---
+
+### 3. `fixed_string.hpp` - ループ変数の統一
+
+#### 修正: `from_span()`メソッド
+
+**修正前:**
+```cpp
+void from_span(span<const char> s) noexcept {
+    byte_length_ = (s.size() < Capacity) ? s.size() : Capacity;
+    for (size_t i = 0; i < byte_length_; ++i) {  // ← size_t
+        buffer_[i] = s[i];
+    }
+    buffer_[byte_length_] = '\0';
+}
+```
+
+**修正後:**
+```cpp
+void from_span(span<const char> s) noexcept {
+    byte_length_ = (s.size() < Capacity) ? static_cast<uint32_t>(s.size()) : Capacity;
+    for (uint32_t i = 0; i < byte_length_; ++i) {  // ← uint32_t
+        buffer_[i] = s[i];
+    }
+    buffer_[byte_length_] = '\0';
+}
+```
+
+**変更点:**
+- `s.size()`の代入時に明示的キャスト
+- ループ変数を`uint32_t`に変更
+
+---
+
+### 4. `fixed_buffer.hpp` - ループ変数の統一
+
+#### 修正: `from_span()`メソッド
+
+**修正前:**
+```cpp
+void from_span(span<const uint8_t> s) noexcept {
+    length_ = (s.size() < Capacity) ? s.size() : Capacity;
+    for (size_t i = 0; i < length_; ++i) {  // ← size_t
+        buffer_[i] = s[i];
+    }
+}
+```
+
+**修正後:**
+```cpp
+void from_span(span<const uint8_t> s) noexcept {
+    length_ = (s.size() < Capacity) ? static_cast<uint32_t>(s.size()) : Capacity;
+    for (uint32_t i = 0; i < length_; ++i) {  // ← uint32_t
+        buffer_[i] = s[i];
+    }
+}
+```
 
 ---
 
@@ -240,7 +238,7 @@ FixedString<70000> str;  // オーバーフローして4464になる！
    constexpr static_string<N> make_static_string(const char (&str)[N]) noexcept;
 
    // ✅ 代わりにこれを使用
-   constexpr auto str = static_string("Hello");
+   auto str = static_string("Hello");
    ```
 
 2. **`to_span()`** - 不要な変換関数
@@ -260,23 +258,6 @@ FixedString<70000> str;  // オーバーフローして4464になる！
    // ✅ 代わりにこれを使用
    StringView sv{s.data(), static_cast<uint32_t>(s.size())};
    ```
-
----
-
-## 検証結果
-
-### ビルド確認
-```bash
-cd test
-make clean && make
-# ✅ 警告なしでビルド成功
-```
-
-### テスト実行
-```bash
-./test_runner
-# ✅ すべてのテストが成功
-```
 
 ---
 
@@ -317,4 +298,9 @@ make clean && make
 - 明示的な型変換で意図を明確化
 - 保守性の向上
 
-プロジェクト全体の型システムが統一され、不要な抽象化が排除されました！
+プロジェクト全体の型システムが統一され、不要な抽象化が排除されました。
+
+---
+
+**Version:** 1.0.0
+**Last Updated:** 2025-11-16

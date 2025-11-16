@@ -159,3 +159,16 @@ chmod +x .git/hooks/pre-commit
 1. `.clang-format`ファイルが存在することを確認
 2. 手動実行: `./scripts/format.sh`
 3. ファイルを再度ステージング: `git add <file>`
+
+---
+
+## 関連ドキュメント
+
+- [Code Quality Tools](code-quality.md) - clang-format/clang-tidyの詳細
+- [C++14互換性ガイド](cpp14_compatibility.md) - C++14準拠の要件
+- CLAUDE.md - コーディング規約全般
+
+---
+
+**Version:** 1.0.0
+**Last Updated:** 2025-11-16

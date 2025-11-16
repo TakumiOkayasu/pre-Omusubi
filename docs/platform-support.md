@@ -344,3 +344,8 @@ target_link_libraries(omusubi_pico pico_stdlib)
 ## コミュニティ貢献
 
 プラットフォーム実装への貢献を歓迎します。詳細は[Contributing Guide](contributing.md)を参照してください。
+
+---
+
+**Version:** 1.0.0
+**Last Updated:** 2025-11-16

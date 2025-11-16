@@ -29,11 +29,15 @@ constexpr auto operator""_ss() noexcept {
 - C++17対応マイコンを使用しないため、条件付きコンパイルも不要
 
 **代替手段**:
-C++14互換の`make_static_string()`ヘルパー関数を使用：
+`static_string()`関数を直接使用（`uint32_t`テンプレートパラメータに統一済み）：
 ```cpp
 // ✅ C++14で使用
-constexpr auto str = make_static_string("Hello");
+auto str = static_string("Hello");
+constexpr auto str2 = static_string("World");  // constexpr文脈でも可
 ```
+
+**注意:** 不要なラッパー関数`make_static_string()`は削除されました。
+詳細は[型システムの統一](type_system_unification.md)を参照してください。
 
 ## 修正された機能
 
@@ -91,7 +95,8 @@ CXXFLAGS = -std=c++14 -Wall -Wextra -pedantic -I../include
 
 ### API変更
 - ❌ `"Hello"_ss` リテラル（C++17）は使用不可
-- ✅ `make_static_string("Hello")` ヘルパー関数を使用
+- ❌ `make_static_string()` ヘルパー関数も削除（不要なラッパー）
+- ✅ `static_string("Hello")` を直接使用（`uint32_t`に統一済み）
 
 ## 今後の方針
 
@@ -108,3 +113,16 @@ CXXFLAGS = -std=c++14 -Wall -Wextra -pedantic -I../include
 - ✅ 組み込みデバイスの幅広い互換性を確保
 
 **プロジェクト全体がC++14のみに依存し、C++17以降の機能は一切含まれていません。**
+
+---
+
+## 関連ドキュメント
+
+- [C++14互換性ガイド](cpp14_compatibility.md) - C++14準拠の詳細
+- [型システムの統一](type_system_unification.md) - `make_static_string()`削除の詳細
+- [`auto`使用ガイド](auto_usage_guide.md) - C++14の型推論活用
+
+---
+
+**Version:** 1.0.1
+**Last Updated:** 2025-11-16

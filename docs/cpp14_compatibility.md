@@ -40,22 +40,22 @@ constexpr bool is_debug_build() { ... }
 
 **修正内容**: `/workspace/include/omusubi/core/static_string.hpp`
 
-C++17のユーザー定義リテラル`operator""_ss`は完全に削除され、C++14互換のヘルパー関数のみを提供します。
+C++17のユーザー定義リテラル`operator""_ss`は完全に削除されました。
 
-```cpp
-// C++14互換のヘルパー関数
-template <uint32_t N>
-constexpr static_string<N> make_static_string(const char (&str)[N]) noexcept {
-    return static_string<N>(str);
-}
-```
+**重要:** 不要なラッパー関数`make_static_string()`も削除されています。
+`static_string()`関数が`uint32_t`テンプレートパラメータに統一されました。
 
 **使用方法**:
 
 ```cpp
-// C++14（唯一の方法）
-constexpr auto str = make_static_string("Hello");
+// ✅ C++14（推奨）
+auto str = static_string("Hello");
+
+// ✅ constexpr文脈でも使用可能
+constexpr auto str = static_string("Hello");
 ```
+
+**関連:** [型システムの統一](type_system_unification.md)も参照してください。
 
 ### 3. Makefile の修正
 
@@ -211,9 +211,22 @@ make clean && make
 ## まとめ
 
 - ✅ すべてのコードはC++14に準拠
-- ✅ C++17以降の機能は条件付きコンパイルまたは削除
-- ✅ 代替実装を提供（`make_static_string`など）
+- ✅ C++17以降の機能は完全に削除（条件付きコンパイルなし）
+- ✅ `static_string()`に統一（不要なラッパー関数は削除）
 - ✅ Makefileは`-std=c++14`を使用
 - ✅ すべてのテストがC++14でコンパイル・実行可能
 
 C++14の厳格な準拠により、Omusubiフレームワークは幅広い組み込み環境で使用できます。
+
+---
+
+## 関連ドキュメント
+
+- [型システムの統一](type_system_unification.md) - `uint32_t`への統一と`make_static_string()`削除の詳細
+- [`auto`使用ガイド](auto_usage_guide.md) - C++14の型推論活用方法
+- CLAUDE.md - コーディング規約全般
+
+---
+
+**Version:** 1.0.1
+**Last Updated:** 2025-11-16

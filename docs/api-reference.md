@@ -866,3 +866,8 @@ void process(span<const char> str) { }
 constexpr auto msg = static_string("Hello");
 constexpr size_t len = msg.size();
 ```
+
+---
+
+**Version:** 1.0.0
+**Last Updated:** 2025-11-16

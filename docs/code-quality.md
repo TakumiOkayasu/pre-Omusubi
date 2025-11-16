@@ -360,9 +360,20 @@ Checks: >
   ...
 ```
 
+## 関連ドキュメント
+
+- [開発ガイド](DEVELOPMENT.md) - コード品質管理の実践ガイド
+- [C++14互換性ガイド](cpp14_compatibility.md) - C++14準拠チェック
+- CLAUDE.md - 命名規則とコーディング規約
+
 ## References
 
 - [clang-format documentation](https://clang.llvm.org/docs/ClangFormat.html)
 - [clang-tidy documentation](https://clang.llvm.org/extra/clang-tidy/)
-- [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuideries)
+- [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
 - [CERT C++ Coding Standard](https://wiki.sei.cmu.edu/confluence/pages/viewpage.action?pageId=88046682)
+
+---
+
+**Version:** 1.0.0
+**Last Updated:** 2025-11-16

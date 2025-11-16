@@ -693,3 +693,15 @@ return std::move(local_var);  // RVOを妨げる可能性
 - 小さなオブジェクト（POD、ポインタ）: `std::move()`不要
 
 **結論: Omusubiでは`std::move()`を使わない。単純にreturnすれば、コンパイラが最適化する。**
+
+---
+
+## 関連ドキュメント
+
+- [型システムの統一](type_system_unification.md) - `uint32_t` vs `size_t`の使い分けルール
+- CLAUDE.md - コーディング規約全般
+
+---
+
+**Version:** 1.0.1
+**Last Updated:** 2025-11-16

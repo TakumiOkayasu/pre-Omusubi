@@ -1039,6 +1039,83 @@ Planned:
 - Variable names: English
 - Documentation: Japanese in README, mixed in code comments
 
+## Documentation Management
+
+**CRITICAL: When creating new documentation, you MUST update existing related documents to maintain consistency.**
+
+### Workflow for Creating New Documentation
+
+1. **Pre-Creation: Survey Existing Documentation**
+   ```bash
+   ls docs/  # List all existing documentation
+   grep -r "related_concept" docs/  # Search for related content
+   ```
+   - Read all files in `docs/` directory
+   - Identify documents that cover related topics
+   - Note any conflicting or overlapping content
+
+2. **Create New Documentation**
+   - Write the new document with clear structure
+   - Add version and date at the end (see format below)
+
+3. **Post-Creation: Update Existing Documents** ⚠️ MANDATORY
+   - **Update all related documents** based on the new document's content
+   - Add cross-references to the new document
+   - Resolve any contradictions or overlapping explanations
+   - Increment version numbers of updated documents (Patch: 0.0.X)
+   - Update "Last Updated" date
+
+### Version and Date Tracking (REQUIRED FOR ALL DOCS)
+
+**Every documentation file in `docs/` MUST end with:**
+```markdown
+---
+
+**Version:** 1.0.0
+**Last Updated:** 2025-11-16
+```
+
+**Version Increment Rules:**
+- **Major (X.0.0)**: Breaking changes, complete rewrites, or removed sections
+- **Minor (0.X.0)**: New sections or significant content additions
+- **Patch (0.0.X)**: Corrections, clarifications, cross-reference updates, minor edits
+
+**When to increment:**
+- Creating new doc → Start at `1.0.0`
+- Adding cross-reference from existing doc → Increment patch version
+- Updating existing doc with new concepts → Increment minor version
+- Major refactoring → Increment major version
+
+### Documentation Structure
+
+- `docs/` - Technical documentation, guides, and specifications
+- `CLAUDE.md` - AI assistant guidelines and project conventions (no version needed)
+- `README.md` - User-facing project overview and quick start (no version needed)
+
+### Consistency Rules
+
+1. **Terminology**: Use identical terms across all documents
+2. **Cross-References**: Link related documents with relative paths
+3. **Update Cascade**: When updating one document, check if others need updates
+4. **No Contradictions**: New content must not contradict existing documentation
+
+**Example: Creating `docs/auto_usage_guide.md`**
+```bash
+# 1. Check existing docs
+ls docs/  # Found: cpp14_compatibility.md, type_system_unification.md
+
+# 2. Read existing docs to find related content
+# Found: type_system_unification.md mentions uint32_t vs size_t
+
+# 3. Create new document: docs/auto_usage_guide.md
+# (Include version 1.0.0 at the end)
+
+# 4. Update existing documents:
+# - Add cross-reference in type_system_unification.md to auto_usage_guide.md
+# - Increment version: 1.0.0 → 1.0.1
+# - Update date: 2025-11-16
+```
+
 # Embedded Development Design Principles
 
 ## Addressing Static Writable Area Constraints

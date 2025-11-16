@@ -731,3 +731,8 @@ void test() {
 - [Contributing Guide](contributing.md) - テストの要件
 - [Architecture](architecture.md) - モック設計のガイドライン
 - [API Reference](api-reference.md) - インターフェース仕様
+
+---
+
+**Version:** 1.0.0
+**Last Updated:** 2025-11-16
