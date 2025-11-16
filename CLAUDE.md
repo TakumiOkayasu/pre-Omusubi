@@ -834,6 +834,28 @@ public:
   - Binary literals (`0b1010`) and digit separators (`1'000'000`)
   - `std::make_unique` for rare heap allocations (though heap allocation is generally prohibited)
   - Variable templates
+- **Type Deduction with `auto`:**
+  - **Prefer `auto` for variable declarations** unless there is a specific reason to use explicit types
+  - `auto` improves maintainability and reduces coupling to specific types
+  - Use explicit types only when:
+    - Type clarity is critical for readability (e.g., numeric literals: `uint32_t count = 0;`)
+    - Interfacing with C APIs or hardware registers
+    - Explicit type conversion is needed for correctness
+  - Examples:
+    ```cpp
+    // ✅ Preferred: auto
+    auto str = static_string("Hello");
+    auto view = str.view();
+    auto ctx = get_system_context();
+
+    // ✅ Acceptable: explicit type when clarity is needed
+    uint32_t retry_count = 0;
+    const char* device_name = "M5Stack";
+
+    // ✗ Avoid: unnecessary explicit types
+    StaticString<5> str = static_string("Hello");  // auto is better
+    StringView view = str.view();                  // auto is better
+    ```
 - **Naming:**
   - Files: `snake_case.h`, `snake_case.hpp`, `snake_case.cpp`
   - Functions/variables: `snake_case`
@@ -847,6 +869,24 @@ public:
 - **String literals:** Use `_sv` suffix (requires `using namespace omusubi::literals`)
 - **Header guards:** Use `#pragma once`
 - **Memory:** No heap allocation - stack or placement new with static buffers only
+- **`std::move()` Usage:** DO NOT use `std::move()` in Omusubi code
+  - All objects are small and stack-allocated (no heap)
+  - Copy cost is negligible (pointers + small data)
+  - `std::move()` can prevent RVO/NRVO optimizations
+  - Simply return values - compiler will optimize
+  - Example:
+    ```cpp
+    // ✅ Correct: simple return (RVO applies)
+    StringView get_view() {
+        return "Hello"_sv;
+    }
+
+    // ✗ Wrong: std::move() is unnecessary and harmful
+    StringView get_view() {
+        StringView view = "Hello"_sv;
+        return std::move(view);  // Prevents RVO
+    }
+    ```
 - **Getter Methods:** ALL getter methods MUST be marked `const`. Example: `HogeContext* get_hoge_context() const = 0;`. If a getter cannot be const, you MUST provide a clear justification explaining why
 - **Implementation Hiding:** When hiding platform-specific implementation details, do NOT expose implementation in headers (no `void* impl_`, no `struct Impl;` forward declarations). Place all implementation details in `.cpp` files using anonymous namespaces with static variables
 - **Static Variables in Implementation Files:** File-scope static variables in `.cpp` files must use the `static` keyword explicitly, even inside anonymous namespaces. Example: `static BluetoothImpl impl;` not just `BluetoothImpl impl;`
