@@ -142,6 +142,42 @@ void test_fixed_string_null_termination() {
     TEST_ASSERT_EQ(s.c_str()[5], '\0', "c_str()でnull終端が存在");
 }
 
+void test_fixed_string_constexpr() {
+    test_section("constexpr対応");
+
+    // コンパイル時文字列構築
+    {
+        constexpr auto str1 = fixed_string("Hello");
+        static_assert(str1.byte_length() == 5, "constexpr byte_length()");
+        static_assert(str1.capacity() == 5, "constexpr capacity()");
+        TEST_ASSERT_EQ(str1.byte_length(), 5U, "constexpr構築のバイト長");
+        TEST_ASSERT_STR_EQ(str1.c_str(), "Hello", "constexpr構築の内容");
+    }
+
+    // コンパイル時UTF-8処理
+    {
+        constexpr auto utf8_str = fixed_string("こんにちは");
+        static_assert(utf8_str.byte_length() == 15, "constexpr UTF-8バイト長");
+        static_assert(utf8_str.char_length() == 5, "constexpr UTF-8文字数");
+        TEST_ASSERT_EQ(utf8_str.byte_length(), 15U, "constexpr UTF-8バイト長");
+        TEST_ASSERT_EQ(utf8_str.char_length(), 5U, "constexpr UTF-8文字数");
+    }
+
+    // コンパイル時StringView
+    {
+        constexpr StringView view("Test");
+        static_assert(view.byte_length() == 4, "constexpr StringView");
+        TEST_ASSERT_EQ(view.byte_length(), 4U, "constexpr StringViewのバイト長");
+    }
+
+    // 実行時にconstexpr関数を使用
+    FixedString<32> s1;
+    s1.append("Hello");
+    s1.append(" World");
+    TEST_ASSERT_EQ(s1.byte_length(), 11U, "constexpr関数の実行時使用");
+    TEST_ASSERT_STR_EQ(s1.c_str(), "Hello World", "constexpr append()の実行時使用");
+}
+
 int main() {
     begin_tests("FixedString<N>");
 
@@ -154,6 +190,7 @@ int main() {
     test_fixed_string_view_conversion();
     test_fixed_string_iteration();
     test_fixed_string_null_termination();
+    test_fixed_string_constexpr();
 
     return end_tests();
 }
