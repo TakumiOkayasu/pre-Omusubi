@@ -1136,6 +1136,15 @@ Planned:
 ### Documentation Structure
 
 - `docs/` - Technical documentation, guides, and specifications
+  - `licenses.md` - License information and external dependencies
+  - `error-handling.md` - Error handling patterns (Optional, Result)
+  - `testing.md` - Testing framework and strategies
+  - `performance.md` - Performance optimization guide
+  - `debug.md` - Debugging techniques (Logger usage)
+  - `security.md` - Security best practices
+  - `build-system.md` - Build system and compiler options
+  - `versioning.md` - Version management and release process
+  - `documentation.md` - Documentation standards
 - `CLAUDE.md` - AI assistant guidelines and project conventions (no version needed)
 - `README.md` - User-facing project overview and quick start (no version needed)
 

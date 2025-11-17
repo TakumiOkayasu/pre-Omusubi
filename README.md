@@ -52,11 +52,24 @@ code .
 
 - **[CLAUDE.md](CLAUDE.md)** - 開発ガイドとアーキテクチャ詳細
 - **[DEVELOPMENT.md](DEVELOPMENT.md)** - 開発環境とワークフロー
-- **[docs/](docs/)** - その他のドキュメント
+- **[docs/](docs/)** - 技術ドキュメント
+  - [licenses.md](docs/licenses.md) - ライセンスと依存関係
+  - [error-handling.md](docs/error-handling.md) - エラーハンドリング
+  - [testing.md](docs/testing.md) - テストガイド
+  - [performance.md](docs/performance.md) - パフォーマンス最適化
+  - [debug.md](docs/debug.md) - デバッグガイド
 
 ## ライセンス
 
-未定（検討中）
+**Omusubiコア部分は外部ライブラリに依存していません。**
+
+- コア機能（Optional, Result, Logger, StringViewなど）は標準C++のみ使用
+- ライセンス制約なし、商用利用完全自由
+- プラットフォーム実装（M5Stackなど）のみが外部ライブラリに依存
+
+詳細は [docs/licenses.md](docs/licenses.md) を参照してください。
+
+**Omusubiフレームワーク自体のライセンス:** 未定（MIT または Apache 2.0 を検討中）
 
 ## 作者
 
