@@ -1,0 +1,775 @@
+#pragma once
+
+#include <cstddef>
+#include <cstdint>
+
+#include "fixed_string.hpp"
+#include "string_view.h"
+
+namespace omusubi {
+
+/**
+ * @brief コンパイル時フォーマット文字列検証
+ *
+ * C++23のstd::basic_format_stringと同等の機能をC++14で実現
+ * フォーマット文字列の妥当性をコンパイル時に検証する
+ *
+ * 注意: C++14の制約により、完全なコンパイル時検証は困難
+ * この実装は型安全性を提供し、実行時検証も行う
+ */
+template <typename... Args>
+class basic_format_string {
+public:
+    /**
+     * @brief 文字列リテラルから構築
+     */
+    template <uint32_t N>
+    constexpr basic_format_string(const char (&str)[N]) noexcept : str_(str), length_(N - 1) {}
+
+    /**
+     * @brief StringViewから構築
+     */
+    constexpr basic_format_string(StringView sv) noexcept : str_(sv.data()), length_(sv.byte_length()) {}
+
+    /**
+     * @brief C文字列として取得
+     */
+    constexpr const char* c_str() const noexcept { return str_; }
+
+    /**
+     * @brief StringViewとして取得
+     */
+    constexpr StringView view() const noexcept { return StringView(str_, length_); }
+
+    /**
+     * @brief 長さを取得
+     */
+    constexpr uint32_t length() const noexcept { return length_; }
+
+    /**
+     * @brief 引数数を取得
+     */
+    static constexpr uint32_t arg_count() noexcept { return sizeof...(Args); }
+
+private:
+    const char* str_;
+    uint32_t length_;
+};
+
+/**
+ * @brief format_string型エイリアス（std::format_string相当）
+ */
+template <typename... Args>
+using format_string = basic_format_string<Args...>;
+
+namespace detail {
+
+/**
+ * @brief 型の最大文字列長を取得（コンパイル時計算用）
+ */
+template <typename T>
+struct max_string_length {
+    static constexpr uint32_t value = 32; // デフォルト
+};
+
+// 整数型の最大長
+template <>
+struct max_string_length<int8_t> {
+    static constexpr uint32_t value = 4; // "-128"
+};
+
+template <>
+struct max_string_length<uint8_t> {
+    static constexpr uint32_t value = 3; // "255"
+};
+
+template <>
+struct max_string_length<int16_t> {
+    static constexpr uint32_t value = 6; // "-32768"
+};
+
+template <>
+struct max_string_length<uint16_t> {
+    static constexpr uint32_t value = 5; // "65535"
+};
+
+template <>
+struct max_string_length<int32_t> {
+    static constexpr uint32_t value = 11; // "-2147483648"
+};
+
+template <>
+struct max_string_length<uint32_t> {
+    static constexpr uint32_t value = 10; // "4294967295"
+};
+
+template <>
+struct max_string_length<int64_t> {
+    static constexpr uint32_t value = 20; // "-9223372036854775808"
+};
+
+template <>
+struct max_string_length<uint64_t> {
+    static constexpr uint32_t value = 20; // "18446744073709551615"
+};
+
+// ブール型
+template <>
+struct max_string_length<bool> {
+    static constexpr uint32_t value = 5; // "false"
+};
+
+// 文字型
+template <>
+struct max_string_length<char> {
+    static constexpr uint32_t value = 1;
+};
+
+// ポインタ型（文字列として扱う、最大長は不明なので大きめに）
+template <>
+struct max_string_length<const char*> {
+    static constexpr uint32_t value = 64;
+};
+
+template <>
+struct max_string_length<char*> {
+    static constexpr uint32_t value = 64;
+};
+
+// StringView
+template <>
+struct max_string_length<StringView> {
+    static constexpr uint32_t value = 64;
+};
+
+/**
+ * @brief 引数リストの最大文字列長の合計を計算
+ */
+template <typename... Args>
+struct sum_max_string_length;
+
+template <>
+struct sum_max_string_length<> {
+    static constexpr uint32_t value = 0;
+};
+
+template <typename T, typename... Rest>
+struct sum_max_string_length<T, Rest...> {
+    static constexpr uint32_t value = max_string_length<T>::value + sum_max_string_length<Rest...>::value;
+};
+
+/**
+ * @brief フォーマット文字列の固定部分の長さを計算（プレースホルダーを除く）
+ */
+constexpr uint32_t calculate_fixed_length(const char* str, uint32_t len) noexcept {
+    uint32_t fixed_len = 0;
+    uint32_t i = 0;
+
+    while (i < len) {
+        if (str[i] == '{') {
+            if (i + 1 < len && str[i + 1] == '{') {
+                // エスケープされた '{{' → 1文字分
+                fixed_len += 1;
+                i += 2;
+            } else if (i + 1 < len && str[i + 1] == '}') {
+                // プレースホルダー '{}' → カウントしない
+                i += 2;
+            } else {
+                // 不正なフォーマット
+                fixed_len += 1;
+                ++i;
+            }
+        } else if (str[i] == '}') {
+            if (i + 1 < len && str[i + 1] == '}') {
+                // エスケープされた '}}' → 1文字分
+                fixed_len += 1;
+                i += 2;
+            } else {
+                // 不正なフォーマット
+                fixed_len += 1;
+                ++i;
+            }
+        } else {
+            // 通常の文字
+            fixed_len += 1;
+            ++i;
+        }
+    }
+
+    return fixed_len;
+}
+
+/**
+ * @brief 必要な容量を計算（コンパイル時）
+ */
+template <uint32_t FormatLen, typename... Args>
+struct calculate_capacity {
+    static constexpr uint32_t value = FormatLen + sum_max_string_length<Args...>::value + 1; // +1 for null terminator
+};
+
+/**
+ * @brief 整数を文字列に変換
+ */
+template <typename T>
+constexpr uint32_t integer_to_string(T value, char* buffer, uint32_t buffer_size) noexcept {
+    // 負数処理
+    bool is_negative = false;
+    if (value < 0) {
+        is_negative = true;
+        value = -value;
+    }
+
+    // 逆順で数字を格納
+    uint32_t pos = 0;
+    if (value == 0) {
+        if (pos >= buffer_size) {
+            return 0;
+        }
+        buffer[pos++] = '0';
+    } else {
+        while (value > 0 && pos < buffer_size) {
+            buffer[pos++] = '0' + (value % 10);
+            value /= 10;
+        }
+    }
+
+    // 負号を追加
+    if (is_negative && pos < buffer_size) {
+        buffer[pos++] = '-';
+    }
+
+    // 反転
+    for (uint32_t i = 0; i < pos / 2; ++i) {
+        char tmp = buffer[i];
+        buffer[i] = buffer[pos - 1 - i];
+        buffer[pos - 1 - i] = tmp;
+    }
+
+    return pos;
+}
+
+/**
+ * @brief 符号なし整数を文字列に変換
+ */
+template <typename T>
+constexpr uint32_t unsigned_to_string(T value, char* buffer, uint32_t buffer_size) noexcept {
+    uint32_t pos = 0;
+    if (value == 0) {
+        if (pos >= buffer_size) {
+            return 0;
+        }
+        buffer[pos++] = '0';
+    } else {
+        // 逆順で数字を格納
+        while (value > 0 && pos < buffer_size) {
+            buffer[pos++] = '0' + (value % 10);
+            value /= 10;
+        }
+
+        // 反転
+        for (uint32_t i = 0; i < pos / 2; ++i) {
+            char tmp = buffer[i];
+            buffer[i] = buffer[pos - 1 - i];
+            buffer[pos - 1 - i] = tmp;
+        }
+    }
+
+    return pos;
+}
+
+/**
+ * @brief 16進数文字列に変換
+ */
+template <typename T>
+constexpr uint32_t hex_to_string(T value, char* buffer, uint32_t buffer_size, bool uppercase = false) noexcept {
+    const char* digits = uppercase ? "0123456789ABCDEF" : "0123456789abcdef";
+
+    uint32_t pos = 0;
+    if (value == 0) {
+        if (pos >= buffer_size) {
+            return 0;
+        }
+        buffer[pos++] = '0';
+    } else {
+        // 逆順で16進数を格納
+        while (value > 0 && pos < buffer_size) {
+            buffer[pos++] = digits[value % 16];
+            value /= 16;
+        }
+
+        // 反転
+        for (uint32_t i = 0; i < pos / 2; ++i) {
+            char tmp = buffer[i];
+            buffer[i] = buffer[pos - 1 - i];
+            buffer[pos - 1 - i] = tmp;
+        }
+    }
+
+    return pos;
+}
+
+/**
+ * @brief 型の素の型を取得（std::decayの簡易版）
+ */
+template <typename T>
+struct remove_cv_ref {
+    using type = T;
+};
+
+template <typename T>
+struct remove_cv_ref<T&> {
+    using type = T;
+};
+
+template <typename T>
+struct remove_cv_ref<const T> {
+    using type = T;
+};
+
+template <typename T>
+struct remove_cv_ref<const T&> {
+    using type = T;
+};
+
+template <typename T, uint32_t N>
+struct remove_cv_ref<T[N]> {
+    using type = T*;
+};
+
+template <typename T, uint32_t N>
+struct remove_cv_ref<const T[N]> {
+    using type = const T*;
+};
+
+template <typename T, uint32_t N>
+struct remove_cv_ref<T (&)[N]> {
+    using type = T*;
+};
+
+template <typename T, uint32_t N>
+struct remove_cv_ref<const T (&)[N]> {
+    using type = const T*;
+};
+
+/**
+ * @brief 値を文字列に変換するトレイト
+ */
+template <typename T>
+struct formatter {
+    static uint32_t to_string(T, char*, uint32_t) noexcept {
+        return 0; // デフォルトは未対応
+    }
+};
+
+// int8_t特殊化
+template <>
+struct formatter<int8_t> {
+    static constexpr uint32_t to_string(int8_t value, char* buffer, uint32_t buffer_size) noexcept { return integer_to_string(static_cast<int32_t>(value), buffer, buffer_size); }
+};
+
+// uint8_t特殊化
+template <>
+struct formatter<uint8_t> {
+    static constexpr uint32_t to_string(uint8_t value, char* buffer, uint32_t buffer_size) noexcept {
+        return unsigned_to_string(static_cast<uint32_t>(value), buffer, buffer_size);
+    }
+};
+
+// int16_t特殊化
+template <>
+struct formatter<int16_t> {
+    static constexpr uint32_t to_string(int16_t value, char* buffer, uint32_t buffer_size) noexcept { return integer_to_string(static_cast<int32_t>(value), buffer, buffer_size); }
+};
+
+// uint16_t特殊化
+template <>
+struct formatter<uint16_t> {
+    static constexpr uint32_t to_string(uint16_t value, char* buffer, uint32_t buffer_size) noexcept {
+        return unsigned_to_string(static_cast<uint32_t>(value), buffer, buffer_size);
+    }
+};
+
+// int32_t特殊化
+template <>
+struct formatter<int32_t> {
+    static constexpr uint32_t to_string(int32_t value, char* buffer, uint32_t buffer_size) noexcept { return integer_to_string(value, buffer, buffer_size); }
+};
+
+// uint32_t特殊化
+template <>
+struct formatter<uint32_t> {
+    static constexpr uint32_t to_string(uint32_t value, char* buffer, uint32_t buffer_size) noexcept { return unsigned_to_string(value, buffer, buffer_size); }
+};
+
+// int64_t特殊化
+template <>
+struct formatter<int64_t> {
+    static constexpr uint32_t to_string(int64_t value, char* buffer, uint32_t buffer_size) noexcept { return integer_to_string(value, buffer, buffer_size); }
+};
+
+// uint64_t特殊化
+template <>
+struct formatter<uint64_t> {
+    static constexpr uint32_t to_string(uint64_t value, char* buffer, uint32_t buffer_size) noexcept { return unsigned_to_string(value, buffer, buffer_size); }
+};
+
+// bool特殊化
+template <>
+struct formatter<bool> {
+    static constexpr uint32_t to_string(bool value, char* buffer, uint32_t buffer_size) noexcept {
+        if (value) {
+            if (buffer_size < 4) {
+                return 0;
+            }
+            buffer[0] = 't';
+            buffer[1] = 'r';
+            buffer[2] = 'u';
+            buffer[3] = 'e';
+            return 4;
+        } else {
+            if (buffer_size < 5) {
+                return 0;
+            }
+            buffer[0] = 'f';
+            buffer[1] = 'a';
+            buffer[2] = 'l';
+            buffer[3] = 's';
+            buffer[4] = 'e';
+            return 5;
+        }
+    }
+};
+
+// char特殊化
+template <>
+struct formatter<char> {
+    static constexpr uint32_t to_string(char value, char* buffer, uint32_t buffer_size) noexcept {
+        if (buffer_size < 1) {
+            return 0;
+        }
+        buffer[0] = value;
+        return 1;
+    }
+};
+
+// const char*特殊化
+template <>
+struct formatter<const char*> {
+    static constexpr uint32_t to_string(const char* value, char* buffer, uint32_t buffer_size) noexcept {
+        if (value == nullptr) {
+            return 0;
+        }
+        uint32_t pos = 0;
+        while (value[pos] != '\0' && pos < buffer_size) {
+            buffer[pos] = value[pos];
+            ++pos;
+        }
+        return pos;
+    }
+};
+
+// StringView特殊化
+template <>
+struct formatter<StringView> {
+    static constexpr uint32_t to_string(StringView value, char* buffer, uint32_t buffer_size) noexcept {
+        uint32_t len = (value.byte_length() < buffer_size) ? value.byte_length() : buffer_size;
+        for (uint32_t i = 0; i < len; ++i) {
+            buffer[i] = value[i];
+        }
+        return len;
+    }
+};
+
+/**
+ * @brief 再帰終了
+ */
+template <uint32_t Capacity>
+void format_impl(FixedString<Capacity>& result, StringView format_str, uint32_t&) noexcept {
+    // 残りの文字列を追加
+    uint32_t pos = 0;
+    while (pos < format_str.byte_length()) {
+        if (format_str[pos] == '{' && pos + 1 < format_str.byte_length() && format_str[pos + 1] == '{') {
+            result.append('{');
+            pos += 2;
+        } else if (format_str[pos] == '}' && pos + 1 < format_str.byte_length() && format_str[pos + 1] == '}') {
+            result.append('}');
+            pos += 2;
+        } else {
+            result.append(format_str[pos]);
+            ++pos;
+        }
+    }
+}
+
+/**
+ * @brief フォーマット実装（可変長引数）
+ */
+template <uint32_t Capacity, typename T, typename... Args>
+void format_impl(FixedString<Capacity>& result, StringView format_str, uint32_t& arg_index, T&& value, Args&&... args) noexcept {
+    // フォーマット文字列を解析
+    uint32_t pos = 0;
+    while (pos < format_str.byte_length()) {
+        // プレースホルダー検索
+        if (format_str[pos] == '{') {
+            if (pos + 1 < format_str.byte_length() && format_str[pos + 1] == '}') {
+                // 現在の引数を変換
+                char buffer[64] = {};
+                uint32_t len = formatter<typename remove_cv_ref<T>::type>::to_string(value, buffer, sizeof(buffer));
+                if (len > 0) {
+                    result.append(StringView(buffer, len));
+                }
+
+                // 次の引数へ
+                ++arg_index;
+                format_impl(result, StringView(format_str.data() + pos + 2, format_str.byte_length() - pos - 2), arg_index, args...);
+                return;
+            } else if (pos + 1 < format_str.byte_length() && format_str[pos + 1] == '{') {
+                // エスケープされた '{{' → '{'
+                result.append('{');
+                pos += 2;
+                continue;
+            }
+        } else if (format_str[pos] == '}' && pos + 1 < format_str.byte_length() && format_str[pos + 1] == '}') {
+            // エスケープされた '}}' → '}'
+            result.append('}');
+            pos += 2;
+            continue;
+        }
+
+        // 通常の文字
+        result.append(format_str[pos]);
+        ++pos;
+    }
+}
+
+} // namespace detail
+
+/**
+ * @brief 文字列フォーマット（basic_format_string版）- 主要実装
+ *
+ * @tparam Capacity 結果バッファのサイズ
+ * @tparam FmtArgs フォーマット文字列が期待する型
+ * @tparam Args 実際の引数の型
+ * @param format_str フォーマット文字列（"{}"でプレースホルダー）
+ * @param args フォーマット引数
+ * @return FixedString<Capacity> フォーマット済み文字列
+ *
+ * 使用例:
+ * @code
+ * format_string<const char*, int> fs("Name: {}, Age: {}");
+ * auto str = format<128>(fs, "Alice", 25);
+ * // 結果: "Name: Alice, Age: 25"
+ * @endcode
+ */
+template <uint32_t Capacity, typename... FmtArgs, typename... Args>
+constexpr FixedString<Capacity> format(const basic_format_string<FmtArgs...>& format_str, Args&&... args) noexcept {
+    FixedString<Capacity> result;
+    uint32_t arg_index = 0;
+    detail::format_impl(result, format_str.view(), arg_index, args...);
+    return result;
+}
+
+/**
+ * @brief 文字列フォーマット（文字列リテラル版、Capacity指定）
+ *
+ * 文字列リテラルから暗黙的にbasic_format_stringを構築
+ *
+ * 使用例:
+ * @code
+ * auto str = format<128>("Hello, {}! Value: {}", "World", 42);
+ * // 結果: "Hello, World! Value: 42"
+ * @endcode
+ */
+template <uint32_t Capacity, uint32_t N, typename... Args>
+constexpr FixedString<Capacity> format(const char (&format_str)[N], Args&&... args) noexcept {
+    return format<Capacity>(basic_format_string<Args...>(format_str), args...);
+}
+
+/**
+ * @brief 文字列フォーマット（文字列リテラル版、Capacity自動計算）
+ *
+ * 文字列リテラルと引数の型から必要な容量を自動計算
+ *
+ * 使用例:
+ * @code
+ * auto str = format("Hello, {}! Value: {}", "World", 42);
+ * // 容量は自動計算される
+ * @endcode
+ */
+template <uint32_t N, typename... Args>
+constexpr auto format(const char (&format_str)[N], Args&&... args) noexcept -> FixedString<detail::calculate_capacity<N, typename detail::remove_cv_ref<Args>::type...>::value> {
+    constexpr uint32_t capacity = detail::calculate_capacity<N, typename detail::remove_cv_ref<Args>::type...>::value;
+    return format<capacity>(basic_format_string<Args...>(format_str), args...);
+}
+
+/**
+ * @brief 文字列フォーマット（StringView版、互換性維持）
+ *
+ * 実行時に構築されたStringViewから使用
+ */
+template <uint32_t Capacity, typename... Args>
+constexpr FixedString<Capacity> format(StringView format_str, Args&&... args) noexcept {
+    return format<Capacity>(basic_format_string<Args...>(format_str), args...);
+}
+
+/**
+ * @brief 16進数フォーマット
+ */
+template <uint32_t Capacity, typename T>
+FixedString<Capacity> format_hex(T value, bool uppercase = false) noexcept {
+    FixedString<Capacity> result;
+    result.append("0x");
+
+    char buffer[32] = {};
+    uint32_t len = detail::hex_to_string(value, buffer, sizeof(buffer), uppercase);
+    if (len > 0) {
+        result.append(StringView(buffer, len));
+    }
+
+    return result;
+}
+
+/**
+ * @brief 文字列フォーマット（basic_format_string版）- 主要実装
+ *
+ * @tparam N 出力バッファの容量
+ * @tparam FmtArgs フォーマット文字列が期待する型
+ * @tparam Args 実際の引数の型
+ * @param result 出力先のFixedString
+ * @param format_str フォーマット文字列
+ * @param args フォーマット引数
+ * @return bool 常にtrue（将来の拡張用）
+ *
+ * 使用例:
+ * @code
+ * FixedString<128> str;
+ * format_string<const char*, int> fs("Name: {}, Age: {}");
+ * format_to(str, fs, "Alice", 25);
+ * @endcode
+ */
+template <uint32_t N, typename... FmtArgs, typename... Args>
+constexpr bool format_to(FixedString<N>& result, const basic_format_string<FmtArgs...>& format_str, Args&&... args) noexcept {
+    result.clear();
+    uint32_t arg_index = 0;
+    detail::format_impl(result, format_str.view(), arg_index, args...);
+    return true;
+}
+
+/**
+ * @brief 文字列フォーマット（文字列リテラル版、バッファ指定）
+ *
+ * 文字列リテラルから暗黙的にbasic_format_stringを構築
+ *
+ * 使用例:
+ * @code
+ * FixedString<128> str;
+ * format_to(str, "Hello, {}! Value: {}", "World", 42);
+ * @endcode
+ */
+template <uint32_t N, uint32_t M, typename... Args>
+constexpr bool format_to(FixedString<N>& result, const char (&format_str)[M], Args&&... args) noexcept {
+    return format_to(result, basic_format_string<Args...>(format_str), args...);
+}
+
+/**
+ * @brief 文字列フォーマット（文字列リテラル版、Capacity自動計算）
+ *
+ * 必要な容量を自動計算してFixedStringを返す
+ *
+ * 使用例:
+ * @code
+ * auto str = format_to("Hello, {}! Value: {}", "World", 42);
+ * // 容量は自動計算される
+ * @endcode
+ */
+template <uint32_t N, typename... Args>
+constexpr auto format_to(const char (&format_str)[N], Args&&... args) noexcept -> FixedString<detail::calculate_capacity<N, typename detail::remove_cv_ref<Args>::type...>::value> {
+    constexpr uint32_t capacity = detail::calculate_capacity<N, typename detail::remove_cv_ref<Args>::type...>::value;
+    FixedString<capacity> result;
+    format_to(result, basic_format_string<Args...>(format_str), args...);
+    return result;
+}
+
+/**
+ * @brief 文字列フォーマット（StringView版、互換性維持）
+ *
+ * 実行時に構築されたStringViewから使用
+ */
+template <uint32_t N, typename... Args>
+constexpr bool format_to(FixedString<N>& result, StringView format_str, Args&&... args) noexcept {
+    return format_to(result, basic_format_string<Args...>(format_str), args...);
+}
+
+/**
+ * @brief 16進数フォーマット（テンプレート引数隠蔽版）
+ */
+template <uint32_t N, typename T>
+bool format_hex_to(FixedString<N>& result, T value, bool uppercase = false) noexcept {
+    result.clear();
+    result.append("0x");
+
+    char buffer[32] = {};
+    uint32_t len = detail::hex_to_string(value, buffer, sizeof(buffer), uppercase);
+    if (len > 0) {
+        result.append(StringView(buffer, len));
+    }
+
+    return true;
+}
+
+/**
+ * @brief デフォルト容量256のフォーマット関数（basic_format_string版）- 主要実装
+ *
+ * @tparam FmtArgs フォーマット文字列が期待する型
+ * @tparam Args 実際の引数の型
+ * @param format_str フォーマット文字列
+ * @param args フォーマット引数
+ * @return FixedString<256> フォーマット済み文字列
+ *
+ * 使用例:
+ * @code
+ * format_string<const char*, int> fs("Name: {}, Age: {}");
+ * auto str = fmt(fs, "Alice", 25);
+ * // 結果: "Name: Alice, Age: 25"
+ * @endcode
+ */
+template <typename... FmtArgs, typename... Args>
+constexpr FixedString<256> fmt(const basic_format_string<FmtArgs...>& format_str, Args&&... args) noexcept {
+    return format<256>(format_str, args...);
+}
+
+/**
+ * @brief デフォルト容量256のフォーマット関数（文字列リテラル版）
+ *
+ * 文字列リテラルから暗黙的にbasic_format_stringを構築
+ *
+ * 使用例:
+ * @code
+ * auto str = fmt("Hello, {}! Value: {}", "World", 42);
+ * // 結果: "Hello, World! Value: 42"
+ * @endcode
+ */
+template <uint32_t N, typename... Args>
+constexpr FixedString<256> fmt(const char (&format_str)[N], Args&&... args) noexcept {
+    return format<256>(basic_format_string<Args...>(format_str), args...);
+}
+
+/**
+ * @brief デフォルト容量256のフォーマット関数（StringView版、互換性維持）
+ *
+ * 実行時に構築されたStringViewから使用
+ */
+template <typename... Args>
+constexpr FixedString<256> fmt(StringView format_str, Args&&... args) noexcept {
+    return format<256>(basic_format_string<Args...>(format_str), args...);
+}
+
+/**
+ * @brief デフォルト容量256の16進数フォーマット
+ */
+template <typename T>
+FixedString<256> fmt_hex(T value, bool uppercase = false) noexcept {
+    return format_hex<256>(value, uppercase);
+}
+
+} // namespace omusubi

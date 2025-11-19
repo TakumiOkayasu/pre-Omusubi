@@ -9,6 +9,7 @@
 #include "context/system_info_context.h"
 #include "core/fixed_buffer.hpp"
 #include "core/fixed_string.hpp"
+#include "core/format.hpp"
 #include "core/log_level.h"
 #include "core/logger.hpp"
 #include "core/optional.hpp"
