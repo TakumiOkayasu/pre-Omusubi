@@ -20,10 +20,7 @@ SystemContextを中心としたクリーンなアーキテクチャにより、�
 - C++14標準準拠
 - インターフェース/実装の完全分離
 - SystemContextによる統一的なハードウェアアクセス
-
-## サポートデバイス
-
-- M5Stack (Basic, Core2, etc.)
+- プラットフォーム独立型アーキテクチャ
 
 ## 開発環境
 
@@ -40,11 +37,7 @@ code .
 
 ## クイックスタート
 
-サンプルコードは[examples/](examples/)ディレクトリを参照してください。
-
-基本的な使い方:
-- **Hello World**: `examples/platform/m5stack/hello_world/`
-- **その他のサンプル**: `examples/platform/m5stack/`
+コアライブラリのサンプルコードは`examples/`ディレクトリを参照してください。
 
 ## ドキュメント
 
@@ -53,6 +46,7 @@ code .
 - **[CLAUDE.md](CLAUDE.md)** - 開発ガイドとアーキテクチャ詳細
 - **[DEVELOPMENT.md](DEVELOPMENT.md)** - 開発環境とワークフロー
 - **[docs/](docs/)** - 技術ドキュメント
+  - [architecture.md](docs/architecture.md) - アーキテクチャ設計
   - [licenses.md](docs/licenses.md) - ライセンスと依存関係
   - [error-handling.md](docs/error-handling.md) - エラーハンドリング
   - [testing.md](docs/testing.md) - テストガイド
