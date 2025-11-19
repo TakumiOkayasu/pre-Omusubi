@@ -16,7 +16,7 @@ void setup() {
     ctx.begin();
 
     // Serial取得
-    serial = ctx.get_connectable_context()->get_serial_context(0);
+    serial = ctx.get_connectable_context().get_serial_context(0);
     serial->connect();
 
     // Logger初期化（スタック変数として保持）

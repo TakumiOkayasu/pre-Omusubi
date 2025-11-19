@@ -1,10 +1,9 @@
 #pragma once
 
-#include <cassert>
-#include <cstdint>
-#include <new>
+#include <omusubi/core/types.h>
 
-#include "types.h"
+#include <cassert>
+#include <new>
 
 namespace omusubi {
 

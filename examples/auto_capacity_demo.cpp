@@ -1,8 +1,7 @@
 // Capacity自動計算のデモ
 
 #include <cstdio>
-
-#include "../include/omusubi/core/format.hpp"
+#include <omusubi/core/format.hpp>
 
 using namespace omusubi;
 

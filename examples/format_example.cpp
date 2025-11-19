@@ -1,8 +1,7 @@
 // format関数の使用例
 
 #include <cstdio>
-
-#include "../include/omusubi/core/format.hpp"
+#include <omusubi/core/format.hpp>
 
 using namespace omusubi;
 

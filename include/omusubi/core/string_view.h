@@ -2,9 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
-
-#include "mcu_config.h"
-#include "string_base.hpp"
+#include <omusubi/core/string_base.hpp>
 
 namespace omusubi {
 

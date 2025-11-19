@@ -1,7 +1,7 @@
 #pragma once
 
-#include "readable.h"
-#include "writable.h"
+#include <omusubi/interface/readable.h>
+#include <omusubi/interface/writable.h>
 
 namespace omusubi {
 

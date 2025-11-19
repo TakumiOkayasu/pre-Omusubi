@@ -1,9 +1,7 @@
 #pragma once
 
-#include "omusubi/interface/connectable.h"
-#include "omusubi/interface/scannable.h"
-
-#include <cstdint>
+#include <omusubi/interface/connectable.h>
+#include <omusubi/interface/scannable.h>
 
 namespace omusubi {
 

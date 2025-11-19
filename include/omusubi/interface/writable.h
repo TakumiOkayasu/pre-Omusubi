@@ -1,9 +1,6 @@
 #pragma once
 
-#include "omusubi/core/span.hpp"
-
-#include <cstddef>
-#include <cstdint>
+#include <omusubi/core/span.hpp>
 
 namespace omusubi {
 

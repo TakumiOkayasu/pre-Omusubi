@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../core/logger.hpp"
-#include "../device/serial_context.h"
+#include <omusubi/device/serial_context.h>
+
+#include <omusubi/core/logger.hpp>
 
 namespace omusubi {
 

@@ -1,8 +1,7 @@
 #include <cassert>
 #include <cstdio>
 #include <cstring>
-
-#include "../include/omusubi/core/format.hpp"
+#include <omusubi/core/format.hpp>
 
 using namespace omusubi;
 

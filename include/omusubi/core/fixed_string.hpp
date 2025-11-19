@@ -1,11 +1,10 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
+#include <omusubi/core/string_view.h>
 
-#include "span.hpp"
-#include "string_base.hpp"
-#include "string_view.h"
+#include <cstdint>
+#include <omusubi/core/span.hpp>
+#include <omusubi/core/string_base.hpp>
 
 namespace omusubi {
 

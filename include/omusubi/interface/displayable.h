@@ -1,6 +1,8 @@
 #pragma once
 
-#include "omusubi/core/string_view.h"
+#include <omusubi/core/string_view.h>
+
+#include <cstdint>
 
 namespace omusubi {
 

@@ -1,6 +1,6 @@
 // Optional<T> のユニットテスト
 
-#include "omusubi/core/optional.hpp"
+#include <omusubi/core/optional.hpp>
 
 #include "../test_framework.hpp"
 

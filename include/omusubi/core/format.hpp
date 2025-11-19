@@ -1,10 +1,9 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
+#include <omusubi/core/string_view.h>
 
-#include "fixed_string.hpp"
-#include "string_view.h"
+#include <cstdint>
+#include <omusubi/core/fixed_string.hpp>
 
 namespace omusubi {
 

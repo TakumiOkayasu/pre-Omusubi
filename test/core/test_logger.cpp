@@ -1,7 +1,7 @@
 // Logger のユニットテスト
 
-#include "omusubi/core/fixed_string.hpp"
-#include "omusubi/core/logger.hpp"
+#include <omusubi/core/fixed_string.hpp>
+#include <omusubi/core/logger.hpp>
 
 #include "../test_framework.hpp"
 

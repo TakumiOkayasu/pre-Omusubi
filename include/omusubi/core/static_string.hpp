@@ -1,9 +1,7 @@
 #pragma once
 
-#include <cstddef>
 #include <cstdint>
-
-#include "string_base.hpp"
+#include <omusubi/core/string_base.hpp>
 
 namespace omusubi {
 

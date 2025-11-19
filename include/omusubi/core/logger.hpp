@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../interface/log_output.h"
-#include "log_level.h"
-#include "string_view.h"
+#include <omusubi/core/log_level.h>
+#include <omusubi/core/string_view.h>
+#include <omusubi/interface/log_output.h>
 
 namespace omusubi {
 

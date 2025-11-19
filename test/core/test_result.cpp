@@ -1,6 +1,6 @@
 // Result<T, E> のユニットテスト
 
-#include "omusubi/core/result.hpp"
+#include <omusubi/core/result.hpp>
 
 #include "../test_framework.hpp"
 

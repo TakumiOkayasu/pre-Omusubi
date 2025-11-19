@@ -1,7 +1,9 @@
 #pragma once
 
-#include "../core/log_level.h"
-#include "../core/string_view.h"
+#include <omusubi/core/log_level.h>
+#include <omusubi/core/string_view.h>
+
+#include <cstdint>
 
 namespace omusubi {
 

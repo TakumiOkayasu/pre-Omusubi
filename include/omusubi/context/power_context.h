@@ -1,8 +1,6 @@
 #pragma once
 
-#include "omusubi/core/types.h"
-
-#include <cstdint>
+#include <omusubi/core/types.h>
 
 namespace omusubi {
 

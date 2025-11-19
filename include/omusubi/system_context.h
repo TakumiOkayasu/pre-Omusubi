@@ -46,25 +46,25 @@ public:
     // ========================================
 
     /** @brief 接続可能なデバイスのコンテキスト */
-    virtual ConnectableContext* get_connectable_context() const = 0;
+    virtual ConnectableContext& get_connectable_context() const = 0;
 
     /** @brief スキャン可能なデバイスのコンテキスト */
-    virtual ScannableContext* get_scannable_context() const = 0;
+    virtual ScannableContext& get_scannable_context() const = 0;
 
     /** @brief センサーデバイスのコンテキスト */
-    virtual SensorContext* get_sensor_context() const = 0;
+    virtual SensorContext& get_sensor_context() const = 0;
 
     /** @brief 入力デバイスのコンテキスト */
-    virtual InputContext* get_input_context() const = 0;
+    virtual InputContext& get_input_context() const = 0;
 
     /** @brief 出力デバイスのコンテキスト */
-    virtual OutputContext* get_output_context() const = 0;
+    virtual OutputContext& get_output_context() const = 0;
 
     /** @brief システム情報コンテキスト */
-    virtual SystemInfoContext* get_system_info_context() const = 0;
+    virtual SystemInfoContext& get_system_info_context() const = 0;
 
     /** @brief 電源管理コンテキスト */
-    virtual PowerContext* get_power_context() const = 0;
+    virtual PowerContext& get_power_context() const = 0;
 
 protected:
     SystemContext() = default;

@@ -1,8 +1,7 @@
 // basic_format_stringのデモ（C++23互換の型安全なフォーマット文字列）
 
 #include <cstdio>
-
-#include "../include/omusubi/core/format.hpp"
+#include <omusubi/core/format.hpp>
 
 using namespace omusubi;
 
