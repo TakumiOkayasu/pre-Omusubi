@@ -128,6 +128,15 @@ main
 
 # Build directories
 obj/
+build/
+bin/
+
+# Test executables (root directory)
+/test_*
+
+# Example executables (examples directory)
+/examples/*_demo
+/examples/*_example
 
 # Backup files
 _backup/
