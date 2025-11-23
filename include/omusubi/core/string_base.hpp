@@ -2,15 +2,15 @@
 
 #include <cstdint>
 
-namespace omusubi {
-
-namespace utf8 {
+namespace omusubi::utf8 {
 
 constexpr uint8_t get_char_byte_length(uint8_t first_byte) noexcept;
 constexpr uint32_t count_chars(const char* str, uint32_t byte_length) noexcept;
 constexpr uint32_t get_char_position(const char* str, uint32_t byte_length, uint32_t char_index) noexcept;
 
-} // namespace utf8
+} // namespace omusubi::utf8
+
+namespace omusubi {
 
 /**
  * @brief CRTP文字列基底クラス

@@ -311,7 +311,7 @@ and use only standard C++14 features.
 
 ## 関連ドキュメント
 
-- [C++14互換性ガイド](cpp14_compatibility.md) - 使用している言語機能
+- [C++14互換性ガイド](cpp17_features.md) - 使用している言語機能
 - [アーキテクチャガイド](architecture.md) - 依存関係の設計思想
 - CLAUDE.md - コーディング規約とプロジェクト方針
 

@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <omusubi/core/fixed_string.hpp>
+#include <type_traits>
 
 namespace omusubi {
 
@@ -61,7 +62,9 @@ private:
 template <typename... Args>
 using format_string = basic_format_string<Args...>;
 
-namespace detail {
+} // namespace omusubi
+
+namespace omusubi::detail {
 
 /**
  * @brief 型の最大文字列長を取得（コンパイル時計算用）
@@ -207,15 +210,19 @@ struct calculate_capacity {
 };
 
 /**
- * @brief 整数を文字列に変換
+ * @brief 整数を文字列に変換（C++17 if constexpr版）
+ *
+ * 符号付き/符号なし整数型を統合的に処理
  */
 template <typename T>
 constexpr uint32_t integer_to_string(T value, char* buffer, uint32_t buffer_size) noexcept {
-    // 負数処理
+    // 負数処理（符号付き型のみ）
     bool is_negative = false;
-    if (value < 0) {
-        is_negative = true;
-        value = -value;
+    if constexpr (std::is_signed<T>::value) {
+        if (value < 0) {
+            is_negative = true;
+            value = -value;
+        }
     }
 
     // 逆順で数字を格納
@@ -232,9 +239,11 @@ constexpr uint32_t integer_to_string(T value, char* buffer, uint32_t buffer_size
         }
     }
 
-    // 負号を追加
-    if (is_negative && pos < buffer_size) {
-        buffer[pos++] = '-';
+    // 負号を追加（符号付き型のみ）
+    if constexpr (std::is_signed<T>::value) {
+        if (is_negative && pos < buffer_size) {
+            buffer[pos++] = '-';
+        }
     }
 
     // 反転
@@ -252,28 +261,8 @@ constexpr uint32_t integer_to_string(T value, char* buffer, uint32_t buffer_size
  */
 template <typename T>
 constexpr uint32_t unsigned_to_string(T value, char* buffer, uint32_t buffer_size) noexcept {
-    uint32_t pos = 0;
-    if (value == 0) {
-        if (pos >= buffer_size) {
-            return 0;
-        }
-        buffer[pos++] = '0';
-    } else {
-        // 逆順で数字を格納
-        while (value > 0 && pos < buffer_size) {
-            buffer[pos++] = '0' + (value % 10);
-            value /= 10;
-        }
-
-        // 反転
-        for (uint32_t i = 0; i < pos / 2; ++i) {
-            char tmp = buffer[i];
-            buffer[i] = buffer[pos - 1 - i];
-            buffer[pos - 1 - i] = tmp;
-        }
-    }
-
-    return pos;
+    // integer_to_stringを使用（if constexprで符号なし型として処理される）
+    return integer_to_string(value, buffer, buffer_size);
 }
 
 /**
@@ -351,131 +340,78 @@ struct remove_cv_ref<const T (&)[N]> {
 };
 
 /**
- * @brief 値を文字列に変換するトレイト
+ * @brief 値を文字列に変換するトレイト（C++17 if constexpr版）
  */
 template <typename T>
 struct formatter {
-    static uint32_t to_string(T, char*, uint32_t) noexcept {
-        return 0; // デフォルトは未対応
-    }
-};
-
-// int8_t特殊化
-template <>
-struct formatter<int8_t> {
-    static constexpr uint32_t to_string(int8_t value, char* buffer, uint32_t buffer_size) noexcept { return integer_to_string(static_cast<int32_t>(value), buffer, buffer_size); }
-};
-
-// uint8_t特殊化
-template <>
-struct formatter<uint8_t> {
-    static constexpr uint32_t to_string(uint8_t value, char* buffer, uint32_t buffer_size) noexcept {
-        return unsigned_to_string(static_cast<uint32_t>(value), buffer, buffer_size);
-    }
-};
-
-// int16_t特殊化
-template <>
-struct formatter<int16_t> {
-    static constexpr uint32_t to_string(int16_t value, char* buffer, uint32_t buffer_size) noexcept { return integer_to_string(static_cast<int32_t>(value), buffer, buffer_size); }
-};
-
-// uint16_t特殊化
-template <>
-struct formatter<uint16_t> {
-    static constexpr uint32_t to_string(uint16_t value, char* buffer, uint32_t buffer_size) noexcept {
-        return unsigned_to_string(static_cast<uint32_t>(value), buffer, buffer_size);
-    }
-};
-
-// int32_t特殊化
-template <>
-struct formatter<int32_t> {
-    static constexpr uint32_t to_string(int32_t value, char* buffer, uint32_t buffer_size) noexcept { return integer_to_string(value, buffer, buffer_size); }
-};
-
-// uint32_t特殊化
-template <>
-struct formatter<uint32_t> {
-    static constexpr uint32_t to_string(uint32_t value, char* buffer, uint32_t buffer_size) noexcept { return unsigned_to_string(value, buffer, buffer_size); }
-};
-
-// int64_t特殊化
-template <>
-struct formatter<int64_t> {
-    static constexpr uint32_t to_string(int64_t value, char* buffer, uint32_t buffer_size) noexcept { return integer_to_string(value, buffer, buffer_size); }
-};
-
-// uint64_t特殊化
-template <>
-struct formatter<uint64_t> {
-    static constexpr uint32_t to_string(uint64_t value, char* buffer, uint32_t buffer_size) noexcept { return unsigned_to_string(value, buffer, buffer_size); }
-};
-
-// bool特殊化
-template <>
-struct formatter<bool> {
-    static constexpr uint32_t to_string(bool value, char* buffer, uint32_t buffer_size) noexcept {
-        if (value) {
-            if (buffer_size < 4) {
+    static constexpr uint32_t to_string(T value, char* buffer, uint32_t buffer_size) noexcept {
+        // 符号付き整数型
+        if constexpr (std::is_same<T, int8_t>::value || std::is_same<T, int16_t>::value) {
+            return integer_to_string(static_cast<int32_t>(value), buffer, buffer_size);
+        } else if constexpr (std::is_same<T, int32_t>::value || std::is_same<T, int64_t>::value) {
+            return integer_to_string(value, buffer, buffer_size);
+        }
+        // 符号なし整数型
+        else if constexpr (std::is_same<T, uint8_t>::value || std::is_same<T, uint16_t>::value) {
+            return unsigned_to_string(static_cast<uint32_t>(value), buffer, buffer_size);
+        } else if constexpr (std::is_same<T, uint32_t>::value || std::is_same<T, uint64_t>::value) {
+            return unsigned_to_string(value, buffer, buffer_size);
+        }
+        // bool型
+        else if constexpr (std::is_same<T, bool>::value) {
+            if (value) {
+                if (buffer_size < 4) {
+                    return 0;
+                }
+                buffer[0] = 't';
+                buffer[1] = 'r';
+                buffer[2] = 'u';
+                buffer[3] = 'e';
+                return 4;
+            } else {
+                if (buffer_size < 5) {
+                    return 0;
+                }
+                buffer[0] = 'f';
+                buffer[1] = 'a';
+                buffer[2] = 'l';
+                buffer[3] = 's';
+                buffer[4] = 'e';
+                return 5;
+            }
+        }
+        // char型
+        else if constexpr (std::is_same<T, char>::value) {
+            if (buffer_size < 1) {
                 return 0;
             }
-            buffer[0] = 't';
-            buffer[1] = 'r';
-            buffer[2] = 'u';
-            buffer[3] = 'e';
-            return 4;
-        } else {
-            if (buffer_size < 5) {
+            buffer[0] = value;
+            return 1;
+        }
+        // const char*型
+        else if constexpr (std::is_same<T, const char*>::value) {
+            if (value == nullptr) {
                 return 0;
             }
-            buffer[0] = 'f';
-            buffer[1] = 'a';
-            buffer[2] = 'l';
-            buffer[3] = 's';
-            buffer[4] = 'e';
-            return 5;
+            uint32_t pos = 0;
+            while (value[pos] != '\0' && pos < buffer_size) {
+                buffer[pos] = value[pos];
+                ++pos;
+            }
+            return pos;
         }
-    }
-};
-
-// char特殊化
-template <>
-struct formatter<char> {
-    static constexpr uint32_t to_string(char value, char* buffer, uint32_t buffer_size) noexcept {
-        if (buffer_size < 1) {
+        // StringView型
+        else if constexpr (std::is_same<T, StringView>::value) {
+            uint32_t len = (value.byte_length() < buffer_size) ? value.byte_length() : buffer_size;
+            for (uint32_t i = 0; i < len; ++i) {
+                buffer[i] = value[i];
+            }
+            return len;
+        }
+        // その他の型（未対応）
+        else {
             return 0;
         }
-        buffer[0] = value;
-        return 1;
-    }
-};
-
-// const char*特殊化
-template <>
-struct formatter<const char*> {
-    static constexpr uint32_t to_string(const char* value, char* buffer, uint32_t buffer_size) noexcept {
-        if (value == nullptr) {
-            return 0;
-        }
-        uint32_t pos = 0;
-        while (value[pos] != '\0' && pos < buffer_size) {
-            buffer[pos] = value[pos];
-            ++pos;
-        }
-        return pos;
-    }
-};
-
-// StringView特殊化
-template <>
-struct formatter<StringView> {
-    static constexpr uint32_t to_string(StringView value, char* buffer, uint32_t buffer_size) noexcept {
-        uint32_t len = (value.byte_length() < buffer_size) ? value.byte_length() : buffer_size;
-        for (uint32_t i = 0; i < len; ++i) {
-            buffer[i] = value[i];
-        }
-        return len;
     }
 };
 
@@ -541,7 +477,9 @@ void format_impl(FixedString<Capacity>& result, StringView format_str, uint32_t&
     }
 }
 
-} // namespace detail
+} // namespace omusubi::detail
+
+namespace omusubi {
 
 /**
  * @brief 文字列フォーマット（basic_format_string版）- 主要実装

@@ -18,11 +18,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Omusubi is a lightweight, type-safe C++14 framework for embedded devices (M5Stack). It provides a clean architecture centered around `SystemContext` for unified hardware access.
+Omusubi is a lightweight, type-safe C++17 framework for embedded devices (M5Stack). It provides a clean architecture centered around `SystemContext` for unified hardware access.
 
 **Key Characteristics:**
 - Zero-overhead abstractions (no heap, no exceptions)
-- C++14 with clang++
+- C++17 with clang++
 - `.hpp` = header-only implementations, `.h` = declarations only
 - Japanese comments standard
 
@@ -42,7 +42,7 @@ make run          # Build and run
 - Format all: `find include src -name "*.h" -o -name "*.hpp" -o -name "*.cpp" | xargs clang-format -i`
 
 ### clang-tidy (Real-time via clangd)
-- Lint manually: `clang-tidy file.cpp -- -Iinclude -std=c++14`
+- Lint manually: `clang-tidy file.cpp -- -Iinclude -std=c++17`
 - Enforces naming: Classes=`CamelCase`, functions/vars=`snake_case`, constants/enums=`UPPER_CASE`, private members=`snake_case_`
 
 ## Architecture: Method Chain Design
@@ -169,8 +169,8 @@ ALL getter methods MUST be `const`. If not possible, provide clear justification
 
 ## Coding Conventions
 
-**C++14 Standard (Strict)**
-- Extended `constexpr`, generic lambdas, `auto` return type deduction, binary literals, digit separators
+**C++17 Standard (Strict)**
+- All C++14 features plus: nested namespaces (`namespace A::B {}`), `if constexpr`, structured bindings, inline variables, fold expressions
 - **constexpr Rule:** ALWAYS use `constexpr` when possible - apply to functions, constructors, methods
 - Only omit when function has side effects or technical limitations - provide justification
 

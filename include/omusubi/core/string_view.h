@@ -4,9 +4,7 @@
 #include <cstdint>
 #include <omusubi/core/string_base.hpp>
 
-namespace omusubi {
-
-namespace utf8 {
+namespace omusubi::utf8 {
 
 constexpr uint8_t get_char_byte_length(uint8_t first_byte) noexcept {
     if ((first_byte & 0x80) == 0x00) {
@@ -50,7 +48,9 @@ constexpr uint32_t get_char_position(const char* str, uint32_t byte_length, uint
     return i;
 }
 
-} // namespace utf8
+} // namespace omusubi::utf8
+
+namespace omusubi {
 
 class StringView : public String<StringView> {
 public:
@@ -178,7 +178,9 @@ private:
     uint32_t byte_length_;
 };
 
-namespace literals {
+} // namespace omusubi
+
+namespace omusubi::literals {
 
 /**
  * @brief 文字列リテラル演算子
@@ -187,6 +189,4 @@ constexpr StringView operator""_sv(const char* str, size_t len) noexcept {
     return {str, static_cast<uint32_t>(len)};
 }
 
-} // namespace literals
-
-} // namespace omusubi
+} // namespace omusubi::literals

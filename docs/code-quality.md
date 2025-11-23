@@ -123,7 +123,7 @@ clang-tidyはコードの静的解析を行い、以下を検出します：
 | `cppcoreguidelines-*` | ベストプラクティス | C++ Core Guidelines準拠 |
 | `performance-*` | 最適化 | 不要なコピー、ムーブセマンティクス |
 | `readability-*` | 可読性 | 命名、複雑度、マジックナンバー |
-| `modernize-*` | C++14イディオム | `nullptr`, `auto`の使用など |
+| `modernize-*` | C++17イディオム | `nullptr`, `auto`, nested namespacesなど |
 
 ### 命名規則
 
@@ -363,7 +363,7 @@ Checks: >
 ## 関連ドキュメント
 
 - [開発ガイド](DEVELOPMENT.md) - コード品質管理の実践ガイド
-- [C++14互換性ガイド](cpp14_compatibility.md) - C++14準拠チェック
+- [C++17機能ガイド](cpp17_features.md) - C++17機能の活用
 - CLAUDE.md - 命名規則とコーディング規約
 
 ## 参考資料

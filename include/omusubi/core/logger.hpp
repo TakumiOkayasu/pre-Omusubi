@@ -112,31 +112,7 @@ constexpr StringView log_level_to_string(LogLevel level) noexcept {
 }
 
 /**
- * @brief コンパイル時ログレベルフィルタ
- *
- * テンプレート特殊化により、リリースビルドでDEBUGレベルのログを完全に削除します。
- * マクロを使用しない、型安全な実装。
- */
-namespace detail {
-
-// デバッグビルド用実装
-template <LogLevel Level, bool IsDebugBuild>
-struct LogDispatcher {
-    static void dispatch(const Logger& logger, StringView message) { logger.log(Level, message); }
-};
-
-// リリースビルド + DEBUG レベル用特殊化（何もしない）
-template <>
-struct LogDispatcher<LogLevel::DEBUG, false> {
-    static void dispatch(const Logger&, StringView) {
-        // リリースビルドではDEBUGログは削除される
-    }
-};
-
-} // namespace detail
-
-/**
- * @brief テンプレートベースのログ出力ヘルパー
+ * @brief テンプレートベースのログ出力ヘルパー（C++17 if constexpr版）
  *
  * 使用例:
  *   log_at<LogLevel::DEBUG>(logger, "Debug message"_sv);
@@ -152,7 +128,15 @@ void log_at(const Logger& logger, StringView message) {
 #else
     constexpr bool is_debug_build = true;
 #endif
-    detail::LogDispatcher<Level, is_debug_build>::dispatch(logger, message);
+
+    // if constexprによりコンパイル時に分岐が決定される
+    if constexpr (Level == LogLevel::DEBUG && !is_debug_build) {
+        // リリースビルドではDEBUGログは完全に削除される
+        (void)logger;
+        (void)message;
+    } else {
+        logger.log(Level, message);
+    }
 }
 
 } // namespace omusubi

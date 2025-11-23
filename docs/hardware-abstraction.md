@@ -1041,7 +1041,7 @@ if (current_flow < 2.0f) {
 
 - [抽象化原則ガイド](abstraction-principles.md) - 汎用的な抽象化原則とSOLID原則
 - [アーキテクチャガイド](architecture.md) - 5層アーキテクチャの詳細
-- [C++14互換性ガイド](cpp14_compatibility.md) - 使用可能なC++機能
+- [C++14互換性ガイド](cpp17_features.md) - 使用可能なC++機能
 - CLAUDE.md - コーディング規約全般
 
 ---
