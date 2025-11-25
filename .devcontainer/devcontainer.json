@@ -22,10 +22,7 @@
 		"vscode": {
 			"extensions": [
 				"eamodio.gitlens",
-				"pizzacat83.codic",
 				"sourcegraph.cody-ai",
-				"openai.openai-chatgpt-adhoc",
-				"VisualStudioExptTeam.vscodeintellicode",
 				"ms-vscode.cpptools",
 				"ms-vscode.cpptools-extension-pack",
 				"llvm-vs-code-extensions.vscode-clangd",
