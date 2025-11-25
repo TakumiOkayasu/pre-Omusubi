@@ -45,6 +45,78 @@ make run          # Build and run
 - Lint manually: `clang-tidy file.cpp -- -Iinclude -std=c++17`
 - Enforces naming: Classes=`CamelCase`, functions/vars=`snake_case`, constants/enums=`UPPER_CASE`, private members=`snake_case_`
 
+**Warning/Hint Fix Policy (IMPORTANT):**
+- **Always fix Warnings** - They indicate potential bugs or problems
+- **Always fix Hints** - They improve code quality and should not be ignored
+- Only skip if technically impossible - Document the reason clearly
+
+**Common warnings/hints and how to fix them:**
+```cpp
+// ⚠️ "Do not use 'else' after 'return'"
+// ❌ Before
+if (condition) {
+    return value1;
+} else {
+    return value2;
+}
+
+// ✅ After
+if (condition) {
+    return value1;
+}
+return value2;
+
+// ★ "Function should be marked [[nodiscard]]"
+// Apply to: getters, functions that return values without side effects
+// ❌ Before
+constexpr int get_value() const;
+bool is_valid() const;
+StringView get_name() const;
+
+// ✅ After
+[[nodiscard]] constexpr int get_value() const;
+[[nodiscard]] bool is_valid() const;
+[[nodiscard]] StringView get_name() const;
+
+// ★ "All parameters should be named"
+// ❌ Before
+void func(int, bool);
+virtual void handle(StringView) = 0;
+
+// ✅ After
+void func(int value, bool flag);
+virtual void handle(StringView message) = 0;
+
+// ★ "Use 'override' instead of 'virtual'"
+// ❌ Before
+virtual void write(StringView msg);  // In derived class
+
+// ✅ After
+void write(StringView msg) override;
+
+// ★ "Make member function 'const'"
+// ❌ Before
+int get_count();  // Doesn't modify state
+
+// ✅ After
+int get_count() const;
+
+// ★ "Use '= default' for default constructor/destructor"
+// ❌ Before
+MyClass() {}
+~MyClass() {}
+
+// ✅ After
+MyClass() = default;
+~MyClass() = default;
+```
+
+**[[nodiscard]] Attribute Guidelines:**
+- Apply to all getters that return values
+- Apply to functions that return status/result without side effects
+- Apply to pure functions (no state modification)
+- Helps catch bugs where return values are accidentally ignored
+
 ## Architecture: Method Chain Design
 
 ### Core Pattern
