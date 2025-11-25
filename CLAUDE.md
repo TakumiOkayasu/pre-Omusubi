@@ -196,6 +196,7 @@ auto retry_count = 0;  // Wrong - int, not uint32_t
 - **`std::move()`:** DO NOT use - prevents RVO, unnecessary for small stack objects
 - **Comments:** Only when essential - code should be self-explanatory
 - **String formatting:** ALWAYS use `format()` for string composition - avoid multiple write calls or manual concatenation
+- **Line endings:** Use `\r\n` for serial/embedded output, `\n` for file/console output
 
 **String Formatting with format() (CRITICAL)**
 - **ALWAYS use `format()` for string composition** - this is mandatory, not optional
@@ -224,6 +225,35 @@ str.append(msg);
 // ✅ REQUIRED: Use format()
 auto str = format("[{}] {}", level, msg);
 ```
+
+**Line Ending Selection (Environment-Specific)**
+Choose appropriate line endings based on output destination:
+
+```cpp
+// ✅ Serial/UART/Embedded output (requires CR+LF for terminal compatibility)
+auto log = format("[INFO] {}\r\n", message);
+serial->write_text(log);
+
+// ✅ File output (platform-native, usually LF on Unix/Linux)
+auto line = format("{}\n", data);
+file->write(line);
+
+// ✅ Console output (LF is standard for Unix/Linux)
+auto output = format("Result: {}\n", value);
+std::cout << output;
+
+// ❌ WRONG: Using \n for serial (may not display correctly on terminals)
+auto bad_log = format("[INFO] {}\n", message);  // Avoid for serial
+
+// ❌ WRONG: Using \r\n for file output (creates extra CR on Unix)
+auto bad_file = format("{}\r\n", data);  // Avoid for files on Unix
+```
+
+**Guidelines:**
+- **Serial/UART/Embedded**: Use `\r\n` (most serial terminals expect CRLF)
+- **Files**: Use `\n` (platform-native line ending)
+- **Console/stdout**: Use `\n` (standard on Unix/Linux)
+- **Network protocols**: Follow protocol specification (HTTP uses `\r\n`, etc.)
 
 ## Usage Pattern
 
