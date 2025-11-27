@@ -18,13 +18,13 @@ public:
     BLEContext& operator=(BLEContext&&) = delete;
 
     // Connectable interface
-    bool connect() override = 0;
-    void disconnect() override = 0;
+    [[nodiscard]] bool connect() override = 0;
+    [[nodiscard]] bool disconnect() override = 0;
     [[nodiscard]] bool is_connected() const override = 0;
 
     // Scannable interface
-    void start_scan() override = 0;
-    void stop_scan() override = 0;
+    [[nodiscard]] bool start_scan() override = 0;
+    [[nodiscard]] bool stop_scan() override = 0;
     [[nodiscard]] uint8_t get_found_count() const override = 0;
     [[nodiscard]] std::string_view get_found_name(uint8_t index) const override = 0;
     [[nodiscard]] int32_t get_found_signal_strength(uint8_t index) const override = 0;

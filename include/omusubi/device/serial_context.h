@@ -32,8 +32,8 @@ public:
     size_t write_text(span<const char> text) override = 0;
 
     // Connectable interface
-    bool connect() override = 0;
-    void disconnect() override = 0;
+    [[nodiscard]] bool connect() override = 0;
+    [[nodiscard]] bool disconnect() override = 0;
     [[nodiscard]] bool is_connected() const override = 0;
 };
 
