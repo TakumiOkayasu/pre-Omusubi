@@ -144,27 +144,24 @@ make test
 
 ## ドキュメント
 
-詳細は以下を参照してください:
-
-- **[CLAUDE.md](CLAUDE.md)** - 開発ガイドとアーキテクチャ詳細
-- **[DEVELOPMENT.md](docs/DEVELOPMENT.md)** - 開発環境とワークフロー
-- **[docs/](docs/)** - 技術ドキュメント
+- **[CLAUDE.md](CLAUDE.md)** - 開発ガイド
+- **[docs/](docs/)**
+  - [contributing.md](docs/contributing.md) - 貢献ガイド・開発環境・コード品質
   - [architecture.md](docs/architecture.md) - アーキテクチャ設計
-  - [licenses.md](docs/licenses.md) - ライセンスと依存関係
-  - [error-handling.md](docs/error-handling.md) - エラーハンドリング
+  - [api-reference.md](docs/api-reference.md) - APIリファレンス
   - [testing.md](docs/testing.md) - テストガイド
+  - [error-handling.md](docs/error-handling.md) - エラーハンドリング
   - [performance.md](docs/performance.md) - パフォーマンス最適化
-  - [debug.md](docs/debug.md) - デバッグガイド
+  - [platform-support.md](docs/platform-support.md) - プラットフォームサポート
+  - [migration-guide.md](docs/migration-guide.md) - マイグレーションガイド
 
 ## ライセンス
 
 **Omusubiコア部分は外部ライブラリに依存していません。**
 
-- コア機能（Result, Logger, format等）は標準C++17のみ使用（std::string_view, std::optionalを使用）
+- コア機能（Result, Logger, format等）は標準C++17のみ使用
 - ライセンス制約なし、商用利用完全自由
 - プラットフォーム実装（M5Stackなど）のみが外部ライブラリに依存
-
-詳細は [docs/licenses.md](docs/licenses.md) を参照してください。
 
 **Omusubiフレームワーク自体のライセンス:** 未定（MIT または Apache 2.0 を検討中）
 

@@ -80,6 +80,51 @@ class SerialContext : public TextReadable, public TextWritable, public Connectab
 - **構造（データ）は抽象化しない** - `FixedString<N>`, `Vector3`等の具象型を直接使用
 - 構造を抽象化すると必ず抽象化漏れが発生するため、具象型を使用することで明確化
 
+### 型の使い分け: `uint32_t` vs `size_t`
+
+| 用途 | 型 | 理由 |
+|------|-----|------|
+| コンテナの容量・サイズ | `uint32_t` | 固定サイズ、バイナリ互換性 |
+| ループカウンタ | `uint32_t` | 一貫性、明示的なサイズ |
+| テンプレートパラメータ | `uint32_t` | 固定サイズ |
+| I/O操作の戻り値 | `size_t` | 標準API（POSIX, Arduino）互換性 |
+
+```cpp
+// 内部実装: uint32_t
+template <uint32_t Capacity>
+class FixedString {
+    uint32_t length_;  // 常に32ビット
+};
+
+// 外部API: size_t
+class ByteReadable {
+    virtual size_t read(span<uint8_t> buffer) = 0;  // 標準API互換
+};
+```
+
+### ハードウェア分類
+
+```
+ハードウェアデバイス
+├─ 入力（センサー）→ Measurable系
+│  ├─ スカラー値 → float get_value()
+│  └─ ベクトル → Vector3 get_values()
+│
+└─ 出力（アクチュエーター）→ Controllable系
+   ├─ ON/OFF → Switchable
+   └─ 位置/速度 → PositionControllable, SpeedControllable
+```
+
+**入出力の分離:**
+```cpp
+// ✅ 分離する
+class PumpContext : public Switchable { };      // 出力
+class FlowSensorContext : public Measurable { }; // 入力
+
+// ❌ 混在させない
+class SmartPumpContext : public Switchable, public Measurable { };
+```
+
 ## レイヤー構造
 
 Omusubiは5つのレイヤーで構成されています。
@@ -676,5 +721,5 @@ SerialContext* serial = ctx.get_serial_context<0>();
 
 ---
 
-**Version:** 2.1.0
-**Last Updated:** 2025-11-25
+**Version:** 2.2.0
+**Last Updated:** 2025-11-27

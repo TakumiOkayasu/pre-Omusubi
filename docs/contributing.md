@@ -294,7 +294,42 @@ auto* reg = reinterpret_cast<volatile uint32_t*>(0x40000000);
 ./scripts/check-format.sh
 ```
 
-詳細は[code-quality.md](code-quality.md)を参照してください。
+**Lintチェック:**
+```bash
+./scripts/lint.sh
+```
+
+### よくある警告と修正方法
+
+```cpp
+// 1. [[nodiscard]] の追加
+[[nodiscard]] int get_value() const { return value_; }
+
+// 2. 未使用パラメータ
+void process(int /*unused_param*/) { }
+
+// 3. override の使用（virtualではなく）
+void process() override { }
+
+// 4. const の追加
+int get_count() const { return count_; }
+
+// 5. else after return の削除
+if (error) {
+    return false;
+}
+return true;  // elseを使わない
+
+// 6. = default の使用
+Context() = default;
+~Context() = default;
+```
+
+**警告を抑制する場合:**
+```cpp
+// NOLINTNEXTLINE(check-name)
+auto* reg = reinterpret_cast<volatile uint32_t*>(0x40000000);
+```
 
 ## ブランチ戦略
 
@@ -659,15 +694,15 @@ make test
 
 ```
 docs/
+├── contributing.md          # 貢献ガイド・開発環境・コード品質（本ファイル）
 ├── architecture.md          # 設計思想とアーキテクチャ
-├── contributing.md          # 貢献ガイド（本ファイル）
-├── code-quality.md          # コード品質ツール
 ├── api-reference.md         # APIリファレンス
-├── platform-support.md      # プラットフォームサポート
 ├── testing.md               # テスト戦略
+├── error-handling.md        # エラーハンドリング
+├── performance.md           # パフォーマンス最適化
+├── platform-support.md      # プラットフォームサポート
 └── migration-guide.md       # マイグレーションガイド
 
-DEVELOPMENT.md               # 開発ガイド（クイックスタート）
 README.md                    # プロジェクト概要
 CHANGELOG.md                 # 変更履歴
 ```
