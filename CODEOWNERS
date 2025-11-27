@@ -7,28 +7,28 @@
 # 詳細: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # デフォルトオーナー（すべてのファイル）
-* @your-github-username
+* @TakumiOkayasu
 
 # ドキュメント
-/docs/ @your-github-username
-/README.md @your-github-username
-/DEVELOPMENT.md @your-github-username
-/CHANGELOG.md @your-github-username
-/SECURITY.md @your-github-username
+/docs/ @TakumiOkayasu
+/README.md @TakumiOkayasu
+/DEVELOPMENT.md @TakumiOkayasu
+/CHANGELOG.md @TakumiOkayasu
+/SECURITY.md @TakumiOkayasu
 
 # コア機能
-/include/omusubi/core/ @your-github-username
-/include/omusubi/interface/ @your-github-username
-/include/omusubi/context/ @your-github-username
-/include/omusubi/device/ @your-github-username
+/include/omusubi/core/ @TakumiOkayasu
+/include/omusubi/interface/ @TakumiOkayasu
+/include/omusubi/context/ @TakumiOkayasu
+/include/omusubi/device/ @TakumiOkayasu
 
 # プラットフォーム実装
-/include/omusubi/platform/ @your-github-username
-/src/platform/ @your-github-username
+/include/omusubi/platform/ @TakumiOkayasu
+/src/platform/ @TakumiOkayasu
 
 # M5Stack固有
-/include/omusubi/platform/m5stack/ @your-github-username
-/src/platform/m5stack/ @your-github-username
+/include/omusubi/platform/m5stack/ @TakumiOkayasu
+/src/platform/m5stack/ @TakumiOkayasu
 
 # Arduino固有（今後追加）
 # /include/omusubi/platform/arduino/ @arduino-maintainer
@@ -39,17 +39,17 @@
 # /src/platform/pico/ @pico-maintainer
 
 # ビルド設定
-/Makefile @your-github-username
-/.github/ @your-github-username
-/.devcontainer/ @your-github-username
+/Makefile @TakumiOkayasu
+/.github/ @TakumiOkayasu
+/.devcontainer/ @TakumiOkayasu
 
 # コード品質ツール
-/.clang-format @your-github-username
-/.clang-tidy @your-github-username
-/scripts/ @your-github-username
+/.clang-format @TakumiOkayasu
+/.clang-tidy @TakumiOkayasu
+/scripts/ @TakumiOkayasu
 
 # サンプルコード
-/examples/ @your-github-username
+/examples/ @TakumiOkayasu
 
 # テスト
-/tests/ @your-github-username
+/tests/ @TakumiOkayasu

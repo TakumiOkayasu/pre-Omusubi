@@ -27,7 +27,7 @@ Omusubiプロジェクトのセキュリティを重視しています。セキ�
 
 GitHub Security Advisoriesが利用できない場合は、メールで報告してください：
 
-**Email:** security@your-domain.com
+**Email:** mail@murata-lab.net
 
 **件名:** [SECURITY] Omusubi Security Vulnerability Report
 
@@ -245,7 +245,7 @@ Omusubiは組み込みシステム向けに設計されており、以下の制�
 セキュリティに関する質問や懸念事項：
 
 - **GitHub Security Advisories:** [推奨] 脆弱性報告用
-- **Email:** security@your-domain.com
+- **Email:** mail@murata-lab.net
 - **GitHub Discussions:** 一般的なセキュリティ質問用
 
 ## クレジット
